@@ -4,9 +4,6 @@
 
 **Мгновенный перевод твитов на русский язык на криптоплатформах**
 
-[![Telegram](https://img.shields.io/badge/Telegram-Samurai__VC-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/Samurai_VC)
-[![Twitter](https://img.shields.io/badge/𝕏-Mortid__X-000000?style=for-the-badge&logo=x)](https://x.com/Mortid_X)
-
 </div>
 
 ---
@@ -43,12 +40,3 @@
 - Circuit breaker — автоматически отключает нестабильные API и восстанавливает
 - Перевод попапов профилей и твитов в ленте
 
----
-
-<div align="center">
-
-**BY SAMURAI**
-
-[Telegram](https://t.me/Samurai_VC) · [𝕏 Twitter](https://x.com/Mortid_X)
-
-</div>
