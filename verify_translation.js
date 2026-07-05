@@ -4,16 +4,16 @@ const assert = require('assert');
 
 console.log('--- STARTING TRANSLATION VERIFICATION ---');
 
-// 1. Read content.js
-const contentPath = path.join(__dirname, 'content.js');
-console.log(`Reading content.js from: ${contentPath}`);
+// 1. Read axiom/utils.js
+const contentPath = path.join(__dirname, 'axiom', 'utils.js');
+console.log(`Reading utils.js from: ${contentPath}`);
 const content = fs.readFileSync(contentPath, 'utf8');
 
 // 2. Extract translateMetadata function
 const funcStartMarker = 'function translateMetadata(text) {';
 const funcStartIndex = content.indexOf(funcStartMarker);
 if (funcStartIndex === -1) {
-  console.error(`ERROR: Could not find function start marker "${funcStartMarker}" in content.js`);
+  console.error(`ERROR: Could not find function start marker "${funcStartMarker}" in utils.js`);
   process.exit(1);
 }
 

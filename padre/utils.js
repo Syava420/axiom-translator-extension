@@ -261,3 +261,24 @@ function cleanTweetText(text) {
 
   return cleaned;
 }
+
+function translateMetadata(text) {
+  if (!text) return '';
+  let res = text;
+  res = res.replace(/\bJoined\b/i, 'Регистрация:');
+  res = res.replace(/\bfollowers\b/i, 'подписчиков');
+  const monthsMap = {
+    'january': 'январь', 'february': 'февраль', 'march': 'март', 'april': 'апрель',
+    'may': 'май', 'june': 'июнь', 'july': 'июль', 'august': 'август',
+    'september': 'сентябрь', 'october': 'октябрь', 'november': 'ноябрь', 'december': 'декабрь',
+    'jan\\.?': 'янв.', 'feb\\.?': 'февр.', 'mar\\.?': 'мар.', 'apr\\.?': 'апр.',
+    'jun\\.?': 'июнь', 'jul\\.?': 'июль', 'aug\\.?': 'авг.', 'sept\\.?': 'сент.',
+    'sep\\.?': 'сент.', 'oct\\.?': 'окт.', 'nov\\.?': 'нояб.', 'dec\\.?': 'дек.'
+  };
+  for (const [eng, rus] of Object.entries(monthsMap)) {
+    const reg = new RegExp('\\b' + eng + '(?![a-zA-Z])', 'gi');
+    res = res.replace(reg, rus);
+  }
+  return res;
+}
+

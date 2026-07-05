@@ -50,11 +50,30 @@ function _padWithOrigWhitespace(raw, translated) {
 }
 
 
+function _translateMetadataInPopup(popupRoot) {
+  if (!popupRoot) return;
+  const walker = document.createTreeWalker(popupRoot, NodeFilter.SHOW_TEXT, null);
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = node.textContent;
+    if (!text) continue;
+    const trimmed = text.trim();
+    if (!trimmed) continue;
+    if (isMetadataText(trimmed)) {
+      const translated = translateMetadata(trimmed);
+      if (translated && translated !== trimmed) {
+        node.textContent = _padWithOrigWhitespace(text, translated);
+      }
+    }
+  }
+}
+
 const TEXT_BEARING_SELECTOR = 'div,span,p,a,section,article,h1,h2,h3,h4,h5,h6,blockquote,pre,li,td,th,label,figcaption,em,strong,b,i,small,dd,dt';
 
 const _loggedFindTweet = new WeakSet();
 
 function findTweetTextElements(popupRoot) {
+  _translateMetadataInPopup(popupRoot);
   const rawRootText = popupRoot.textContent || '';
   const rootText = rawRootText.includes('Members') && rawRootText.includes('Created by')
     ? getSpacedTextContent(popupRoot) : '';

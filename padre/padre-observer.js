@@ -104,7 +104,35 @@ function findCommunityDescription(popupRoot) {
   return best ? [best] : [];
 }
 
+function _padWithOrigWhitespace(raw, translated) {
+  if (!raw) return translated;
+  let i = 0;
+  while (i < raw.length && raw.charCodeAt(i) <= 32) i++;
+  let j = raw.length;
+  while (j > i && raw.charCodeAt(j - 1) <= 32) j--;
+  return raw.slice(0, i) + translated + raw.slice(j);
+}
+
+function _translateMetadataInPopup(popupRoot) {
+  if (!popupRoot) return;
+  const walker = document.createTreeWalker(popupRoot, NodeFilter.SHOW_TEXT, null);
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = node.textContent;
+    if (!text) continue;
+    const trimmed = text.trim();
+    if (!trimmed) continue;
+    if (isMetadataText(trimmed)) {
+      const translated = translateMetadata(trimmed);
+      if (translated && translated !== trimmed) {
+        node.textContent = _padWithOrigWhitespace(text, translated);
+      }
+    }
+  }
+}
+
 function findTweetTextElements(popupRoot, isProfile) {
+  _translateMetadataInPopup(popupRoot);
 
   const communityResult = findCommunityDescription(popupRoot);
   if (communityResult.length > 0) return communityResult;

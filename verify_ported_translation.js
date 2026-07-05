@@ -11,7 +11,8 @@ global.console.warn = console.warn;
 // 2. Read constants.js and evaluate it to get CONFIG
 const constantsPath = path.join(__dirname, 'axiom', 'constants.js');
 console.log(`Reading constants.js from: ${constantsPath}`);
-const constantsContent = fs.readFileSync(constantsPath, 'utf8');
+let constantsContent = fs.readFileSync(constantsPath, 'utf8');
+constantsContent += '\nglobal.CONFIG = CONFIG;';
 eval(constantsContent);
 
 // Verify CONFIG is defined
@@ -25,6 +26,7 @@ console.log('Successfully evaluated constants.js and loaded CONFIG.');
 const translatorPath = path.join(__dirname, 'axiom', 'translator.js');
 console.log(`Reading translator.js from: ${translatorPath}`);
 let translatorContent = fs.readFileSync(translatorPath, 'utf8');
+translatorContent += '\nglobal.TextPreprocessor = TextPreprocessor;';
 
 // Strip out classes or functions that depend on browser-specific code or Chrome APIs if they error,
 // but TextPreprocessor only uses CONFIG.CRYPTO_PRESERVE.
