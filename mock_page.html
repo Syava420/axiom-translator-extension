@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitter/X Cards Mock Page</title>
+  <style>
+    body {
+      background-color: #15202b;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+    .card {
+      background-color: #15202b;
+      border: 1px solid #38444d;
+      border-radius: 16px;
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+    .card-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .profile-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #555;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .display-name {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .username {
+      color: #8b98a5;
+      font-size: 14px;
+    }
+    .metadata-row {
+      display: flex;
+      gap: 16px;
+      color: #8b98a5;
+      font-size: 14px;
+      margin-top: 4px;
+      border-bottom: 1px solid #38444d;
+      padding-bottom: 8px;
+    }
+    .tweet-content {
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Axiom Auto-Translator Extension - Mock Page</h1>
+
+  <!-- Card 1: 350px wide -->
+  <div class="card" style="width: 350px;">
+    <div class="card-header">
+      <img class="profile-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><circle cx='24' cy='24' r='24' fill='%231d9bf0'/></svg>" alt="Profile 1">
+      <div class="user-info">
+        <span class="display-name">Alice Smith</span>
+        <span class="username">@alice</span>
+      </div>
+    </div>
+    <div class="metadata-row">
+      <span class="joined-date">Joined Nov 2013</span>
+      <span class="followers-count">114 followers</span>
+    </div>
+    <div class="tweet-content">Testing the Axiom Translator extension on this compact card. It is exactly 350px wide!</div>
+  </div>
+
+  <!-- Card 2: 500px wide -->
+  <div class="card" style="width: 500px;">
+    <div class="card-header">
+      <img class="profile-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><circle cx='24' cy='24' r='24' fill='%2300ba7c'/></svg>" alt="Profile 2">
+      <div class="user-info">
+        <span class="display-name">Bob Jones</span>
+        <span class="username">@bob</span>
+      </div>
+    </div>
+    <div class="metadata-row">
+      <span class="joined-date">Joined March 2021</span>
+      <span class="followers-count">1.2M followers</span>
+    </div>
+    <div class="tweet-content">Hello world! Running assertions on translation of March. This card has a width of 500px.</div>
+  </div>
+
+  <!-- Card 3: 550px wide -->
+  <div class="card" style="width: 550px;">
+    <div class="card-header">
+      <img class="profile-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><circle cx='24' cy='24' r='24' fill='%23e81c4f'/></svg>" alt="Profile 3">
+      <div class="user-info">
+        <span class="display-name">Charlie Dev</span>
+        <span class="username">@charlie</span>
+      </div>
+    </div>
+    <div class="metadata-row">
+      <span class="joined-date">Joined Mar. 2021</span>
+      <span class="followers-count">500K followers</span>
+    </div>
+    <div class="tweet-content">This card tests the abbreviated month with a trailing period. The width is set to 550px.</div>
+  </div>
+
+  <!-- Card 4: 600px wide -->
+  <div class="card" style="width: 600px;">
+    <div class="card-header">
+      <img class="profile-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><circle cx='24' cy='24' r='24' fill='%23f91880'/></svg>" alt="Profile 4">
+      <div class="user-info">
+        <span class="display-name">David May</span>
+        <span class="username">@david</span>
+      </div>
+    </div>
+    <div class="metadata-row">
+      <span class="joined-date">Joined May 2018</span>
+      <span class="followers-count">10 followers</span>
+    </div>
+    <div class="tweet-content">May is a short month name with no abbreviation abbreviation. Let's make sure it is translated perfectly. Width is 600px.</div>
+  </div>
+
+  <!-- Card 5: Long text but height-constrained (380px wide, max-height 200px, scrollable) -->
+  <div class="card" style="width: 380px; max-height: 200px; overflow-y: auto;">
+    <div class="card-header">
+      <img class="profile-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><circle cx='24' cy='24' r='24' fill='%23795548'/></svg>" alt="Profile 5">
+      <div class="user-info">
+        <span class="display-name">Eva Long</span>
+        <span class="username">@eva</span>
+      </div>
+    </div>
+    <div class="metadata-row">
+      <span class="joined-date">Joined Dec 2020</span>
+      <span class="followers-count">9.8K followers</span>
+    </div>
+    <div class="tweet-content">This card contains very long text that will overflow the maximum height constraint. Let's verify that the translation card's height matches this card's physical layout height on the screen (200px) instead of stretching to fit the full text content. Here is some extra text to make it overflow: line 1, line 2, line 3, line 4, line 5, line 6, line 7, line 8, line 9, line 10.</div>
+  </div>
+
+</body>
+</html>

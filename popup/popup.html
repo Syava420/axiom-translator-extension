@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Axiom Translator</title>
+</head>
+<body>
+  <div class="popup-wrapper">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-area">
+        <img src="../icons/icon48.png" alt="Axiom Logo" class="logo">
+        <div class="title-meta">
+          <h1>AXIOM TRANSLATOR</h1>
+          <span class="version" id="extVersion">v1.1.0</span>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="toggleEnabled" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+      <span class="status-triangle">▲</span>
+      <span class="status-text" id="statusText">ACTIVE</span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="section-title">Статистика</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statTranslated">0</div>
+        <div class="stat-label">Переведено</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statCached">0</div>
+        <div class="stat-label">Из кэша</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statPreserved">0</div>
+        <div class="stat-label">Сленг спасен</div>
+      </div>
+    </div>
+
+    <!-- Dictionary Section -->
+    <div class="section-title collapsible" id="toggleDict">
+      <span>Словарь сленга</span>
+      <span class="collapse-icon">▼</span>
+    </div>
+    <div class="dictionary-container collapsed" id="dictContainer">
+      <textarea id="customDictText" placeholder="word = перевод&#10;$sol = соланочка&#10;whale = кит" spellcheck="false"></textarea>
+      <button class="action-btn secondary" id="btnSaveDict">
+        <span class="btn-triangle">▲</span> Сохранить словарь
+      </button>
+      <div class="default-slang-section">
+        <div class="default-slang-title" id="toggleDefaultSlang">
+          <span>Встроенные слова (180+)</span>
+          <span class="slang-collapse-icon">▼</span>
+        </div>
+        <div class="default-slang-list collapsed" id="defaultSlangList">
+          $sol, $solana, Raydium, Ray, raydium, Jupiter, Jup, jupiter, Phantom, solflare, Altcoin, altcoin, altcoins, memecoin, memecoins, shitcoin, shitcoins, stablecoin, satoshi, sats, gwei, wallet, lfg, hodl, hodling, fud, fomo, dyor, nfa, wagmi, ngmi, iykyk, gm, gn, gg, ath, atl, dca, roi, apy, apr, tvl, mcap, fdv, defi, dex, cex, amm, dao, dapp, nft, pfp, lp, otc, pnl, rpc, evm, tps, mev, ico, ido, ieo, kyc, ca, og, l1, l2, l3, zk, degen, degens, ape, aped, aping, whale, whales, rekt, rekted, rugged, rugging, rug pull, buy the dip, diamond hands, paper hands, weak hands, exit liquidity, stop loss, take profit, limit order, market order, short squeeze, bull run, bear market, bull market, green candle, red candle, panic sell, panic buy, yield farming, liquidity pool, market cap, floor price, priority fee, dev wallet, wen, wen lambo, wen moon, wen pump, to the moon, gas, gas fee, gas fees, staking, staked, swap, swapped, swaps, bridge, bridged, whitelist, mint, minted, minting
+        </div>
+      </div>
+    </div>
+
+    <!-- Control Actions -->
+    <div class="actions-area">
+      <button class="action-btn" id="btnExportTweets" style="margin-bottom: 8px;">
+        <span class="btn-triangle">▲</span> Экспорт твитов (TXT)
+      </button>
+      <button class="action-btn" id="btnClearCache">
+        <span class="btn-triangle">▲</span> Очистить кэш
+      </button>
+    </div>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

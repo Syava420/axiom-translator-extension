@@ -1,0 +1,54 @@
+# TWEET TRANSLATOR
+
+<div align="center">
+
+**Мгновенный перевод твитов на русский язык на криптоплатформах**
+
+[![Telegram](https://img.shields.io/badge/Telegram-Samurai__VC-2CA5E0?style=for-the-badge&logo=telegram)](https://t.me/Samurai_VC)
+[![Twitter](https://img.shields.io/badge/𝕏-Mortid__X-000000?style=for-the-badge&logo=x)](https://x.com/Mortid_X)
+
+</div>
+
+---
+
+## Поддерживаемые сайты
+
+- [axiom.trade](https://axiom.trade)
+- [trade.padre.gg](https://trade.padre.gg)
+
+## Установка (Windows / Mac / Linux)
+
+1. Скачай или клонируй этот репозиторий
+2. Открой Chrome → введи в адресной строке `chrome://extensions/`
+3. Включи **Режим разработчика** (Developer mode) — переключатель справа вверху
+4. Нажми **Загрузить распакованное расширение** (Load unpacked)
+5. Выбери папку проекта (где лежит `manifest.json`)
+6. Готово! Иконка расширения появится в панели Chrome
+
+> После установки просто зайди на axiom.trade или trade.padre.gg — переводы появятся автоматически.
+
+## Использование
+
+- Перевод включается **автоматически** на поддерживаемых сайтах
+- **Клик** по переведённому тексту — показать оригинал
+- **Повторный клик** — вернуть перевод
+- **Вкл/выкл** через popup расширения (клик по иконке)
+
+## Особенности
+
+- 6 API переводчиков с автоматическим fallback — если один не работает, берёт другой
+- Кэширование переводов — моментальный повтор без повторного запроса
+- Крипто-термины сохраняются без перевода (`rug pull`, `diamond hands`, `hodl`, `degen`...)
+- Работает даже при потере контекста расширения
+- Circuit breaker — автоматически отключает нестабильные API и восстанавливает
+- Перевод попапов профилей и твитов в ленте
+
+---
+
+<div align="center">
+
+**BY SAMURAI**
+
+[Telegram](https://t.me/Samurai_VC) · [𝕏 Twitter](https://x.com/Mortid_X)
+
+</div>
