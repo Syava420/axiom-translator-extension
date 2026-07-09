@@ -13,7 +13,7 @@ const _API_ERROR_RE = /QUERY\.LENGTH|LIMIT\.EXCEEDED|MAX\.ALLOWED|MYMEMORY WARNI
 const _MOZHI_ERROR_RE = /QUERY\.LENGTH|LIMIT\.EXCEEDED|MAX\.ALLOWED/i;
 
 const _PP_RT_PREFIX = /^(RT\s+@[A-Za-z_][A-Za-z0-9_]{0,14}:?\s*)/i;
-const _PP_PLACEHOLDER = /§\s*(\d+)\s*§/g;
+const _PP_PLACEHOLDER = /_\s*ph\s*_\s*(\d+)\s*_/gi;
 const _PP_SPACE_PUNCT = / ([.,;:!?)])/g;
 const _PP_NEWLINE_PUNCT = /(\n+)\s*([.!?,;:])\s*/g;
 const _PP_DUP_PUNCT = /([.,;:!?])\1+/g;
@@ -26,8 +26,8 @@ const _PP_HTML_APOS = /&#39;/g;
 const _PP_HTML_QUOT = /&quot;/g;
 const _PP_HTML_AMP = /&amp;/g;
 const _PP_SENT_SPLIT = /(?<=[.!?])\s+/;
-const _PP_STRIP_PH = /§\d+§/g;
-const _PP_RESTORE_PH = /§(\d+)§/g;
+const _PP_STRIP_PH = /_ph_\d+_/gi;
+const _PP_RESTORE_PH = /_ph_(\d+)_/gi;
 const _PP_WORD_SPLIT = /\s+/;
 
 class TextPreprocessor {
@@ -83,7 +83,7 @@ class TextPreprocessor {
     let processed = text.replace(_PP_RT_PREFIX, (match) => {
       const idx = placeholders.length;
       placeholders.push(match);
-      return '§' + idx + '§ ';
+      return '_ph_' + idx + '_ ';
     });
     const cleanText = processed.replace(this._regex, (match) => {
       const idx = placeholders.length;
@@ -93,7 +93,7 @@ class TextPreprocessor {
       } else {
         placeholders.push(match);
       }
-      return '§' + idx + '§';
+      return '_ph_' + idx + '_';
     });
     return { cleanText, placeholders };
   }

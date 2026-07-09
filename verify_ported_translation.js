@@ -45,15 +45,15 @@ const preprocessor = new TextPreprocessor();
 const testCases = [
   {
     input: 'Guys, $SOL is mooning! Don\'t panic sell, keep diamond hands.',
-    expectedPreprocessed: 'Guys, §1§ is §5§! Don\'t §2§, keep §0§.',
+    expectedPreprocessed: 'Guys, _ph_1_ is _ph_5_! Don\'t _ph_2_, keep _ph_0_.',
     // Simulating translation where placeholders stay intact but text might change slightly
-    translatedInput: 'Ребята, §1§ растет! Не §2§, сохраняйте §0§.',
+    translatedInput: 'Ребята, _ph_1_ растет! Не _ph_2_, сохраняйте _ph_0_.',
     expectedPostprocessed: 'Ребята, $SOL растет! Не panic sell, сохраняйте diamond hands.'
   },
   {
     input: 'The developer rugged us, this memecoin was a total rug pull.',
-    expectedPreprocessed: 'The §2§ §1§ us, this §3§ was a total §0§.',
-    translatedInput: 'Этот §2§ §1§ нас, этот §3§ был полным §0§.',
+    expectedPreprocessed: 'The _ph_2_ _ph_1_ us, this _ph_3_ was a total _ph_0_.',
+    translatedInput: 'Этот _ph_2_ _ph_1_ нас, этот _ph_3_ был полным _ph_0_.',
     expectedPostprocessed: 'Этот developer rugged нас, этот memecoin был полным rug pull.'
   }
 ];

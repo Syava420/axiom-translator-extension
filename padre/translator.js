@@ -7,7 +7,9 @@ class RateLimitError extends Error {
 
 const _PP_NL_TRIM = / *\n */g;
 const _PP_MULTI_SPACE = /  +/g;
-const _PP_PLACEHOLDER = /§\s*(\d+)\s*§/g;
+const _PP_PLACEHOLDER = /_\s*ph\s*_\s*(\d+)\s*_/gi;
+const _PP_STRIP_PH = /_ph_\d+_/gi;
+const _PP_RESTORE_PH = /_ph_(\d+)_/gi;
 const _PP_SPACE_PUNCT = / ([.,;:!?)])/g;
 const _PP_NEWLINE_PUNCT = /(\n+)\s*([.!?,;:])\s*/g;
 const _PP_DUP_PUNCT = /([.,;:!?])\1+/g;
@@ -74,7 +76,7 @@ class TextPreprocessor {
     const nlPreserved = text.replace(/\n+/g, (match) => {
       const idx = placeholders.length;
       placeholders.push(match);
-      return ' §' + idx + '§ ';
+      return ' _ph_' + idx + '_ ';
     });
     const cleanText = nlPreserved.replace(this._regex, (match) => {
       const idx = placeholders.length;
@@ -84,7 +86,7 @@ class TextPreprocessor {
       } else {
         placeholders.push(match);
       }
-      return '§' + idx + '§';
+      return '_ph_' + idx + '_';
     });
     return { cleanText, placeholders };
   }
@@ -531,9 +533,9 @@ class TranslationService {
       this.stats.preserved += placeholders.length;
     }
 
-    const strippedCheck = cleanText.replace(/§\d+§/g, '').trim();
+    const strippedCheck = cleanText.replace(_PP_STRIP_PH, '').trim();
     if (strippedCheck.length < 3) {
-      let result = cleanText.replace(/§(\d+)§/g, (_, idx) => {
+      let result = cleanText.replace(_PP_RESTORE_PH, (_, idx) => {
         const i = parseInt(idx);
         return i < placeholders.length ? placeholders[i] : _;
       });
