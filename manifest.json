@@ -36,6 +36,7 @@
     {
       "matches": ["https://axiom.trade/*"],
       "js": [
+        "popup/errorHandler.js",
         "axiom/constants.js",
         "axiom/utils.js",
         "axiom/cache.js",
@@ -51,6 +52,7 @@
     {
       "matches": ["https://trade.padre.gg/*"],
       "js": [
+        "popup/errorHandler.js",
         "padre/constants.js",
         "padre/utils.js",
         "padre/cache.js",

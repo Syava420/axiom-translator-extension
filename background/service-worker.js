@@ -1,3 +1,5 @@
+importScripts('../popup/errorHandler.js');
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   const existing = await chrome.storage.local.get(['enabled', 'stats']);
   if (existing.enabled === undefined) {

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script src="errorHandler.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="popup.css">
@@ -27,6 +28,19 @@
     <div class="status-bar" id="statusBar">
       <span class="status-triangle">▲</span>
       <span class="status-text" id="statusText">ACTIVE</span>
+    </div>
+
+    <!-- Error Banner Container -->
+    <div id="popupErrorContainer" style="display: none; border: 1px solid #ff453a; background: #150505; padding: 8px; border-radius: 2px; margin-bottom: 16px; font-family: ui-monospace, monospace; font-size: 9px; color: #ffdad9;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span id="popupErrorTitle" style="font-weight: bold; color: #ff453a; text-transform: uppercase; letter-spacing: 0.5px;">▲ Ошибки в работе</span>
+        <span id="closePopupError" style="cursor: pointer; color: #8e8e93; font-weight: bold; font-size: 11px; padding: 0 4px;">×</span>
+      </div>
+      <div style="margin-bottom: 8px; max-height: 50px; overflow-y: auto; line-height: 1.3;" id="popupErrorList"></div>
+      <div style="display: flex; gap: 6px;">
+        <button id="btnCopyErrorLogs" class="action-btn secondary" style="padding: 4px; font-size: 8px; border-color: rgba(255, 69, 58, 0.4); color: #ff453a; width: auto; flex: 1;">Копировать отчет</button>
+        <button id="btnClearErrorLogs" class="action-btn secondary" style="padding: 4px; font-size: 8px; border-color: #2c2c2e; color: #8e8e93; width: auto; flex: 1;">Сбросить</button>
+      </div>
     </div>
 
     <!-- Stats Grid -->

@@ -96,8 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       'padre_translation_cache_v2_version',
       'axiom_diagnostics',
       'padre_diagnostics',
-      'saved_english_tweets'
+      'saved_english_tweets',
+      'axiom_error_logs'
     ]);
+
+    const errCont = document.getElementById('popupErrorContainer');
+    if (errCont) errCont.style.display = 'none';
 
     // Reset stats
     const zeroStats = { translated: 0, cached: 0, errors: 0, preserved: 0 };
@@ -239,4 +243,107 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
+
+  // --- Error Monitor UI Logic ---
+  const popupErrorContainer = document.getElementById('popupErrorContainer');
+  const popupErrorTitle = document.getElementById('popupErrorTitle');
+  const popupErrorList = document.getElementById('popupErrorList');
+  const closePopupError = document.getElementById('closePopupError');
+  const btnCopyErrorLogs = document.getElementById('btnCopyErrorLogs');
+  const btnClearErrorLogs = document.getElementById('btnClearErrorLogs');
+
+  async function checkErrorLogs() {
+    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+    try {
+      const { axiom_error_logs } = await chrome.storage.local.get('axiom_error_logs');
+      if (axiom_error_logs && axiom_error_logs.length > 0) {
+        popupErrorTitle.textContent = `▲ Ошибки в работе (${axiom_error_logs.length})`;
+        
+        // Render simple list of errors (last 3)
+        popupErrorList.innerHTML = axiom_error_logs.map(err => {
+          const time = err.timestamp ? err.timestamp.split('T')[1].slice(0, 8) : '';
+          return `<div style="border-bottom: 1px dashed #2c2c2e; padding: 2px 0; word-break: break-all;">
+            <span style="color: #ff453a;">[${time}]</span> [${err.context}] ${escapeHtml(err.message)}
+          </div>`;
+        }).reverse().slice(0, 5).join('');
+        
+        popupErrorContainer.style.display = 'block';
+      } else {
+        popupErrorContainer.style.display = 'none';
+      }
+    } catch (e) {
+      console.warn('[popupErrorMonitor] Error loading logs:', e);
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  if (closePopupError) {
+    closePopupError.addEventListener('click', () => {
+      popupErrorContainer.style.display = 'none';
+    });
+  }
+
+  if (btnClearErrorLogs) {
+    btnClearErrorLogs.addEventListener('click', async () => {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        await chrome.storage.local.remove('axiom_error_logs');
+        popupErrorContainer.style.display = 'none';
+      }
+    });
+  }
+
+  if (btnCopyErrorLogs) {
+    btnCopyErrorLogs.addEventListener('click', async () => {
+      if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
+      try {
+        const { axiom_error_logs } = await chrome.storage.local.get('axiom_error_logs');
+        if (!axiom_error_logs || axiom_error_logs.length === 0) return;
+        
+        let report = `### AXIOM TRANSLATOR - FULL ERROR REPORT (${new Date().toISOString()})\n\n`;
+        axiom_error_logs.forEach((err, idx) => {
+          report += `#### Error #${idx + 1}
+- **Timestamp**: ${err.timestamp}
+- **Context**: ${err.context}
+- **Extension Version**: ${err.version}
+- **URL**: ${err.url}
+- **User Agent**: ${err.userAgent}
+- **Error Type**: ${err.type}
+- **Message**: ${err.message}
+- **Source**: ${err.source}:${err.line}:${err.col}
+
+**Stack Trace**:
+\`\`\`
+${err.stack || 'No stack trace available'}
+\`\`\`
+
+--------------------------------------------------\n\n`;
+        });
+
+        await navigator.clipboard.writeText(report);
+        const originalText = btnCopyErrorLogs.textContent;
+        btnCopyErrorLogs.textContent = 'Скопировано!';
+        btnCopyErrorLogs.style.borderColor = '#30d158';
+        btnCopyErrorLogs.style.color = '#30d158';
+        setTimeout(() => {
+          btnCopyErrorLogs.textContent = originalText;
+          btnCopyErrorLogs.style.borderColor = '';
+          btnCopyErrorLogs.style.color = '';
+        }, 1500);
+      } catch (e) {
+        console.error('[popupErrorMonitor] Copy failed:', e);
+      }
+    });
+  }
+
+  // Run error log check on popup load
+  await checkErrorLogs();
 });
