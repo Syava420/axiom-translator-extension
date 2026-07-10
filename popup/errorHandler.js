@@ -27,6 +27,15 @@
 
   // 2. Format & Log Error Helper
   async function handleCapturedError(message, source, lineno, colno, error, type = 'runtime') {
+    // Ignore benign ResizeObserver notifications from page-level layouts/charts (e.g. TradingView)
+    const msgStr = String(message || (error ? error.message : '')).toLowerCase();
+    if (
+      msgStr.includes('resizeobserver loop completed') ||
+      msgStr.includes('resizeobserver loop limit exceeded')
+    ) {
+      return;
+    }
+
     const timestamp = new Date().toISOString();
     const stack = error && error.stack ? error.stack : '';
     const url = typeof window !== 'undefined' ? window.location.href : 'service-worker';
