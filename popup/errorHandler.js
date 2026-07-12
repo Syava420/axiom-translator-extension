@@ -30,8 +30,8 @@
     // Ignore benign ResizeObserver notifications from page-level layouts/charts (e.g. TradingView)
     const msgStr = String(message || (error ? error.message : '')).toLowerCase();
     if (
-      msgStr.includes('resizeobserver loop completed') ||
-      msgStr.includes('resizeobserver loop limit exceeded')
+      msgStr.includes('resizeobserver') ||
+      msgStr.includes('resize observer')
     ) {
       return;
     }
@@ -281,6 +281,8 @@ ${err.stack || 'No stack trace available'}
   if (typeof window !== 'undefined') {
     // Intercept standard errors
     window.addEventListener('error', function (event) {
+      const msg = String(event.message || '').toLowerCase();
+      if (msg.includes('resizeobserver') || msg.includes('resize observer')) return;
       if (event.error || event.message) {
         handleCapturedError(
           event.message,
