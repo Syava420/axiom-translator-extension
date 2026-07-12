@@ -22,22 +22,19 @@ if (typeof CONFIG === 'undefined') {
 }
 console.log('Successfully evaluated constants.js and loaded CONFIG.');
 
-// 3. Read translator.js and evaluate it
-const translatorPath = path.join(__dirname, 'axiom', 'translator.js');
-console.log(`Reading translator.js from: ${translatorPath}`);
-let translatorContent = fs.readFileSync(translatorPath, 'utf8');
-translatorContent += '\nglobal.TextPreprocessor = TextPreprocessor;';
+// 3. Read preprocessor.js and evaluate it
+const preprocessorPath = path.join(__dirname, 'axiom', 'preprocessor.js');
+console.log(`Reading preprocessor.js from: ${preprocessorPath}`);
+let preprocessorContent = fs.readFileSync(preprocessorPath, 'utf8');
+preprocessorContent += '\nglobal.TextPreprocessor = TextPreprocessor;';
 
-// Strip out classes or functions that depend on browser-specific code or Chrome APIs if they error,
-// but TextPreprocessor only uses CONFIG.CRYPTO_PRESERVE.
-// Let's evaluate the content.
-eval(translatorContent);
+eval(preprocessorContent);
 
 if (typeof TextPreprocessor === 'undefined') {
-  console.error('ERROR: TextPreprocessor is not defined after evaluating translator.js');
+  console.error('ERROR: TextPreprocessor is not defined after evaluating preprocessor.js');
   process.exit(1);
 }
-console.log('Successfully evaluated translator.js and loaded TextPreprocessor.');
+console.log('Successfully evaluated preprocessor.js and loaded TextPreprocessor.');
 
 // 4. Test TextPreprocessor
 const preprocessor = new TextPreprocessor();

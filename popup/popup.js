@@ -91,11 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Clear from storage
     await chrome.storage.local.remove([
       'axiom_translation_cache_v2',
-      'padre_translation_cache_v2',
       'axiom_translation_cache_v2_version',
-      'padre_translation_cache_v2_version',
       'axiom_diagnostics',
-      'padre_diagnostics',
       'saved_english_tweets',
       'axiom_error_logs'
     ]);

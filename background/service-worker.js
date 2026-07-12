@@ -136,9 +136,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-chrome.storage.local.get('enabled').then(({ enabled }) => {
-  if (enabled !== false) {
-    fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=hi',
-      { credentials: 'omit' }).catch(() => {});
-  }
-}).catch(() => {});
+

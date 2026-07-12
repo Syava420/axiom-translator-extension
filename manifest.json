@@ -2,15 +2,15 @@
   "manifest_version": 3,
   "name": "Axiom Translator",
   "version": "1.1.0",
-  "description": "Автоматический перевод твитов на русский язык для axiom.trade и padre.gg с сохранением крипто-сленга.",
+  "description": "Автоматический перевод твитов на русский язык для axiom.trade с сохранением крипто-сленга.",
   "permissions": [
     "storage",
     "activeTab"
   ],
   "host_permissions": [
     "https://axiom.trade/*",
-    "https://trade.padre.gg/*",
     "https://translate.googleapis.com/*",
+    "https://www.google.com/*",
     "https://api.mymemory.translated.net/*",
     "https://api.fxtwitter.com/*",
     "https://cdn.syndication.twimg.com/*",
@@ -28,12 +28,6 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://trade.padre.gg/*"],
-      "js": ["padre/api-interceptor.js"],
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
       "matches": ["https://axiom.trade/*"],
       "js": [
         "popup/errorHandler.js",
@@ -41,26 +35,15 @@
         "axiom/utils.js",
         "axiom/cache.js",
         "axiom/diagnostics.js",
+        "axiom/preprocessor.js",
+        "axiom/rate-limiter.js",
+        "axiom/queue.js",
+        "axiom/dom-finder.js",
+        "axiom/pre-cacher.js",
         "axiom/translator.js",
         "axiom/observer.js",
         "axiom/ui.js",
         "axiom/content.js"
-      ],
-      "run_at": "document_idle",
-      "all_frames": false
-    },
-    {
-      "matches": ["https://trade.padre.gg/*"],
-      "js": [
-        "popup/errorHandler.js",
-        "padre/constants.js",
-        "padre/utils.js",
-        "padre/cache.js",
-        "padre/diagnostics.js",
-        "padre/translator.js",
-        "padre/padre-observer.js",
-        "padre/ui.js",
-        "padre/content.js"
       ],
       "run_at": "document_idle",
       "all_frames": false

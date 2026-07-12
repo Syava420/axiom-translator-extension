@@ -54,27 +54,7 @@
   document.head.appendChild(_prefetchFrag);
 
 
-  function _pingApis(word) {
-    try {
-      const gUrl = CONFIG.APIS.GOOGLE.url + '?' + new URLSearchParams({ ...CONFIG.APIS.GOOGLE.params, q: word });
-      chrome.runtime.sendMessage({ type: 'PROXY_FETCH', url: gUrl }, () => {});
-    } catch (e) {}
-    for (const base of CONFIG.APIS.MOZHI.instances) {
-      fetch(base + '/api/translate?engine=' + CONFIG.APIS.MOZHI.engine + '&from=en&to=ru&text=' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
-    }
-    fetch(CONFIG.APIS.SIMPLYTRANSLATE.url + '?engine=google&from=en&to=ru&text=' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
-    for (const base of CONFIG.APIS.LINGVA.instances) {
-      fetch(base + '/api/v1/en/ru/' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
-    }
-  }
 
-  if (isEnabled) _pingApis('hi');
-
-  const _keepAliveId = setInterval(() => {
-    if (!isEnabled) return;
-    if (!chrome.runtime?.id) { clearInterval(_keepAliveId); return; }
-    _pingApis('ok');
-  }, 60000);
 
 
   if (isEnabled) {
