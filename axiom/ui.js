@@ -142,8 +142,12 @@ class TranslationUI {
         handleText = handleEl.textContent.trim();
       }
 
-      const promptText = `Напиши на русском в 2 коротких предложениях (без разбора сленга WAGMI/FOMO/Solana/HODL): какой КОНКРЕТНЫЙ инфоповод, мем или новость у этого коина и почему его покупают? Твит ${handleText}: ${cleanText}`.replace(/\s+/g, ' ').trim();
-      const searchQuery = promptText.length > 400 ? promptText.substring(0, 400) : promptText;
+      const promptText = `Найди свежие новости и обсуждения в Twitter X, Reddit и сети по теме. Напиши на русском с разделением по строкам:
+📌 Саммари: (1 предложение)
+⚡ Инфоповод из X/Reddit: (что произошло)
+🚀 Почему покупают: (в чем суть пампа)
+Без сленга WAGMI/FOMO. Твит ${handleText}: ${cleanText}`.replace(/ +/g, ' ').trim();
+      const searchQuery = promptText.length > 450 ? promptText.substring(0, 450) : promptText;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(cleanText).catch(() => {});
