@@ -281,6 +281,11 @@ class TweetObserver {
         if (panel?.classList.contains('axiom-tx-panel')) panel.remove();
       }
 
+      const popupRoot = popupNode?.closest?.(POPUP_CONTAINER_SELECTOR) || popupNode || el.closest?.(POPUP_CONTAINER_SELECTOR);
+      if (popupRoot && this.ui?.injectNarrativeButton) {
+        this.ui.injectNarrativeButton(popupRoot, el);
+      }
+
       this._handleTweetFound(el, popupNode);
     }
   }

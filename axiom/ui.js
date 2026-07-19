@@ -74,6 +74,36 @@ class TranslationUI {
         letter-spacing: 0.5px;
         z-index: 10;
       }
+
+      .axiom-narrative-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(124, 58, 237, 0.2);
+        border: 1px solid rgba(167, 139, 250, 0.4);
+        color: #ddd6fe;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 0 6px;
+        transition: all 0.15s ease;
+        user-select: none;
+        z-index: 99;
+        font-family: inherit;
+        line-height: 1.2;
+      }
+      .axiom-narrative-btn:hover {
+        background: rgba(124, 58, 237, 0.45);
+        border-color: #a78bfa;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+      }
+      .axiom-narrative-btn:active {
+        transform: translateY(0);
+      }
     `;
     document.head.appendChild(style);
   }
@@ -88,6 +118,52 @@ class TranslationUI {
 
   showFailed(element) {
     element.dataset.translated = 'failed';
+  }
+
+  injectNarrativeButton(popupRoot, element) {
+    if (!popupRoot || popupRoot.querySelector('.axiom-narrative-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'axiom-narrative-btn';
+    btn.type = 'button';
+    btn.title = 'Искать нарратив в Google (скопирует твит и откроет Google)';
+    btn.innerHTML = '🔍 <span>Нарратив</span>';
+
+    const handler = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const origText = element.dataset?.originalText || element._txOriginal?.join(' ') || element.textContent || '';
+      const cleanText = typeof cleanTweetText === 'function' ? cleanTweetText(origText) : origText;
+
+      let handleText = '';
+      const handleEl = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"]');
+      if (handleEl) {
+        handleText = handleEl.textContent.trim();
+      }
+
+      const searchQuery = `${handleText} ${cleanText} narrative meaning memecoin crypto news`.replace(/\s+/g, ' ').trim();
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(cleanText).catch(() => {});
+      }
+
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      window.open(searchUrl, '_blank');
+    };
+
+    btn.addEventListener('click', handler, true);
+    btn.addEventListener('pointerdown', (e) => e.stopPropagation(), true);
+
+    const header = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"], [class*="profile"], [class*="header"]')
+      || popupRoot.querySelector('div > span, div > h3, div > h4')
+      || popupRoot.firstElementChild;
+
+    if (header && header.parentElement) {
+      header.parentElement.appendChild(btn);
+    } else {
+      popupRoot.prepend(btn);
+    }
   }
 
   _setupGlobalToggle() {
