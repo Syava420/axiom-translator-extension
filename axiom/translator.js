@@ -90,7 +90,7 @@ class TranslationService {
         this.stats.cached++;
         if (this.diagnostics) this.diagnostics.recordCacheHit();
         this._reportStats();
-        this._saveEnglishTweet(text);
+        this._saveTweet(text, cached);
       }
       return cached;
     }
@@ -98,7 +98,7 @@ class TranslationService {
     if (text.length > 480) {
       const result = await this._translateLong(text, hash, priority, skipStats);
       if (result && !skipStats) {
-        this._saveEnglishTweet(text);
+        this._saveTweet(text, result);
       }
       return result;
     }
@@ -108,7 +108,7 @@ class TranslationService {
       if (result && !skipStats) {
         this.stats.translated++;
         this._reportStats();
-        this._saveEnglishTweet(text);
+        this._saveTweet(text, result);
       }
       return result;
     } catch (err) {
@@ -120,16 +120,22 @@ class TranslationService {
     }
   }
 
-  _saveEnglishTweet(text) {
+  _saveTweet(english, russian) {
+    if (!english || !russian) return;
     if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
     chrome.storage.local.get(['saved_english_tweets']).then(data => {
       const list = data.saved_english_tweets || [];
-      if (!list.includes(text)) {
-        list.push(text);
+      const exists = list.some(item => (typeof item === 'string' ? item === english : item.english === english));
+      if (!exists) {
+        list.push({ english, russian, timestamp: Date.now() });
         if (list.length > 5000) list.shift();
         chrome.storage.local.set({ saved_english_tweets: list }).catch(() => {});
       }
     }).catch(() => {});
+  }
+
+  _saveEnglishTweet(text, translation) {
+    this._saveTweet(text, translation);
   }
 
 

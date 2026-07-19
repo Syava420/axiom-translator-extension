@@ -140,8 +140,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
+        const formattedTweets = list.map(item => {
+          if (typeof item === 'string') {
+            return `[EN]: ${item}`;
+          }
+          const ru = item.russian || item.translation || '';
+          return `[EN]: ${item.english}\n[RU]: ${ru}`;
+        });
+
         // Format: join tweets by newlines and a delimiter line
-        const fileContent = list.join('\n\n----------------------------------------\n\n');
+        const fileContent = formattedTweets.join('\n\n----------------------------------------\n\n');
         const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
