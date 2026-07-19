@@ -78,31 +78,31 @@ class TranslationUI {
       .axiom-narrative-btn {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        background: rgba(124, 58, 237, 0.2);
-        border: 1px solid rgba(167, 139, 250, 0.4);
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        background: rgba(124, 58, 237, 0.25);
+        border: 1px solid rgba(167, 139, 250, 0.45);
         color: #ddd6fe;
-        border-radius: 4px;
-        padding: 2px 7px;
-        font-size: 11px;
-        font-weight: 600;
+        border-radius: 6px;
         cursor: pointer;
-        margin: 0 6px;
+        margin: 0 4px;
         transition: all 0.15s ease;
         user-select: none;
         z-index: 99;
-        font-family: inherit;
-        line-height: 1.2;
+        flex-shrink: 0;
+        vertical-align: middle;
       }
       .axiom-narrative-btn:hover {
-        background: rgba(124, 58, 237, 0.45);
+        background: rgba(124, 58, 237, 0.55);
         border-color: #a78bfa;
         color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+        transform: scale(1.08);
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.4);
       }
       .axiom-narrative-btn:active {
-        transform: translateY(0);
+        transform: scale(0.96);
       }
     `;
     document.head.appendChild(style);
@@ -126,8 +126,8 @@ class TranslationUI {
     const btn = document.createElement('button');
     btn.className = 'axiom-narrative-btn';
     btn.type = 'button';
-    btn.title = 'Искать нарратив в Google (скопирует твит и откроет Google)';
-    btn.innerHTML = '🔍 <span>Нарратив</span>';
+    btn.title = 'Искать нарратив в Google на русском (нажмите чтобы скопировать и открыть Google)';
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
 
     const handler = (e) => {
       e.stopPropagation();
@@ -142,13 +142,13 @@ class TranslationUI {
         handleText = handleEl.textContent.trim();
       }
 
-      const searchQuery = `${handleText} ${cleanText} narrative meaning memecoin crypto news`.replace(/\s+/g, ' ').trim();
+      const searchQuery = `Что за нарратив и новость в мемкоине ${handleText} ${cleanText}`.replace(/\s+/g, ' ').trim();
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(cleanText).catch(() => {});
       }
 
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&hl=ru`;
       window.open(searchUrl, '_blank');
     };
 
