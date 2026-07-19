@@ -142,13 +142,14 @@ class TranslationUI {
         handleText = handleEl.textContent.trim();
       }
 
-      const searchQuery = `Что за нарратив и новость в мемкоине ${handleText} ${cleanText}`.replace(/\s+/g, ' ').trim();
+      const promptText = `Ответь строго на русском языке. Сначала дай короткое саммари (суть в 1 предложении), затем объясни простыми словами (как 5-летнему ребенку): в чем актуальный нарратив и смысл этого мемкоина/новости? Твит ${handleText}: "${cleanText}"`;
+      const searchQuery = promptText.replace(/\s+/g, ' ').trim();
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(cleanText).catch(() => {});
       }
 
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&hl=ru`;
+      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&hl=ru&udm=36`;
       window.open(searchUrl, '_blank');
     };
 
