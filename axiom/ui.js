@@ -142,8 +142,8 @@ class TranslationUI {
         handleText = handleEl.textContent.trim();
       }
 
-      const promptText = `Объясни кратко на русском: в чем суть и нарратив этого мемкоина? ${handleText} ${cleanText}`.replace(/\s+/g, ' ').trim();
-      const searchQuery = promptText.length > 350 ? promptText.substring(0, 350) : promptText;
+      const promptText = `Напиши на русском в 2 коротких предложениях (без разбора сленга WAGMI/FOMO/Solana/HODL): какой КОНКРЕТНЫЙ инфоповод, мем или новость у этого коина и почему его покупают? Твит ${handleText}: ${cleanText}`.replace(/\s+/g, ' ').trim();
+      const searchQuery = promptText.length > 400 ? promptText.substring(0, 400) : promptText;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(cleanText).catch(() => {});
