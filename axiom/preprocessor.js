@@ -18,6 +18,30 @@ const _PP_STRIP_PH = /_ph_\d+_/gi;
 const _PP_RESTORE_PH = /_ph_(\d+)_/gi;
 const _PP_WORD_SPLIT = /\s+/;
 
+const BUILTIN_DICTIONARY = {
+  'doge': 'Доге',
+  'lore': 'лор',
+  'runner': 'раннер',
+  'runners': 'раннеры',
+  'trenches': 'тренчи',
+  'dev': 'дев',
+  'devs': 'девы',
+  'jeet': 'джит',
+  'jeets': 'житы',
+  'bag': 'бэг',
+  'bags': 'бэги',
+  'moonshot': 'муншот',
+  'sidekick': 'сайдкик',
+  'normie': 'нормис',
+  'normies': 'нормисы',
+  'proof of wallet': 'Пруф кошелька',
+  'about a day\'s wages': 'около дневного заработка',
+  'had one thing going for it': 'обладала одним преимуществом',
+  'wants or needs': 'желания или потребности',
+  'no scriptability': 'без программируемости',
+  'fees to his github': 'комиссии в его GitHub'
+};
+
 class TextPreprocessor {
   constructor(customDictionary) {
     this.customDictionary = customDictionary || null;
@@ -30,17 +54,18 @@ class TextPreprocessor {
   }
 
   _buildRegex() {
+    const activeDict = Object.assign({}, BUILTIN_DICTIONARY, this.customDictionary || {});
+    this.activeDict = activeDict;
+
     const cp = CONFIG.CRYPTO_PRESERVE;
     const multi = [...cp.MULTI_WORD];
     const single = [...cp.SINGLE_WORD];
 
-    if (this.customDictionary) {
-      for (const key of Object.keys(this.customDictionary)) {
-        if (key.includes(' ')) {
-          multi.push(key);
-        } else {
-          single.push(key);
-        }
+    for (const key of Object.keys(activeDict)) {
+      if (key.includes(' ')) {
+        multi.push(key);
+      } else {
+        single.push(key);
       }
     }
 
@@ -76,8 +101,8 @@ class TextPreprocessor {
     const cleanText = processed.replace(this._regex, (match) => {
       const idx = placeholders.length;
       const lowerMatch = match.toLowerCase();
-      if (this.customDictionary && this.customDictionary[lowerMatch]) {
-        placeholders.push(this.customDictionary[lowerMatch]);
+      if (this.activeDict && this.activeDict[lowerMatch]) {
+        placeholders.push(this.activeDict[lowerMatch]);
       } else {
         placeholders.push(match);
       }

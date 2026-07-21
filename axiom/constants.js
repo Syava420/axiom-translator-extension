@@ -185,10 +185,12 @@ const CONFIG = {
       'generational wealth', 'printing money', 'free money',
       'on-chain', 'off-chain', 'cross-chain', 'seed phrase', 'private key',
       'public key', 'cold wallet', 'hot wallet', 'hardware wallet',
-      'gas fee', 'gas fees',
+      'gas fee', 'gas fees', 'proof of wallet', 'about a day\'s wages',
+      'had one thing going for it', 'wants or needs', 'no scriptability', 'fees to his github',
     ],
 
     SINGLE_WORD: [
+      'doge', 'lore', 'runner', 'runners', 'trenches', 'sidekick', 'bonding',
       'hodl', 'hodling', 'fud', 'fomo', 'dyor', 'nfa', 'wagmi', 'ngmi',
       'lfg', 'iykyk', 'gm', 'gn', 'gg',
       'ath', 'atl', 'dca', 'roi', 'apy', 'apr', 'tvl', 'mcap', 'fdv',
