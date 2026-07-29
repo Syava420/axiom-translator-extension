@@ -1015,6 +1015,7 @@ class TweetObserver {
     }
 
     if (!domText || domText.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) {
+      if (this.ui?.logDebug) this.ui.logDebug('warn', 'Пропущено', 'Слишком короткий текст');
       if (textNodes.length > 0 && textNodes.every(n => n.isUrl || n.isCardLabel || !n.text)) {
         for (const tn of textNodes) {
           if (!tn.node.isConnected) continue;
@@ -1030,8 +1031,16 @@ class TweetObserver {
       }
       return;
     }
-    if (isRussianText(domText)) return;
-    if (isMetadataText(domText)) return;
+    if (isRussianText(domText)) {
+      if (this.ui?.logDebug) this.ui.logDebug('warn', 'Пропущено', 'Уже на русском: "' + domText.substring(0, 40) + '..."');
+      return;
+    }
+    if (isMetadataText(domText)) {
+      if (this.ui?.logDebug) this.ui.logDebug('warn', 'Пропущено', 'Метаданные: "' + domText.substring(0, 40) + '..."');
+      return;
+    }
+
+    if (this.ui?.logDebug) this.ui.logDebug('info', 'Найдена карточка', '"' + domText.substring(0, 50) + '..." (' + domText.length + 'ch)');
 
     const textKey = textHash(domText);
     if (this._inFlightTexts.has(textKey)) return;

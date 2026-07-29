@@ -51,6 +51,9 @@
   }
 
   const ui = new TranslationUI();
+  const { debug } = await chrome.storage.local.get('debug').catch(() => ({}));
+  if (debug) ui.setDebugEnabled(true);
+
   const observer = new TweetObserver(translator, cache, ui, diagnostics);
 
   if (isEnabled) {
@@ -106,6 +109,11 @@
         } else {
           observer.stop();
         }
+        sendResponse({ ok: true });
+        break;
+
+      case 'TOGGLE_DEBUG':
+        ui.setDebugEnabled(message.debug);
         sendResponse({ ok: true });
         break;
 

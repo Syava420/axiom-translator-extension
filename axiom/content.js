@@ -28,6 +28,9 @@
   const translator = new TranslationService(cache, diagnostics, state.custom_dictionary);
 
   const ui = new TranslationUI();
+  const { debug } = await chrome.storage.local.get('debug').catch(() => ({}));
+  if (debug) ui.setDebugEnabled(true);
+
   const observer = new TweetObserver(translator, cache, ui, diagnostics);
 
   const _apiHosts = [
@@ -85,6 +88,11 @@
           observer.stop();
         }
         if (CONFIG.DEBUG) console.log(`[AxiomTranslator] Translation ${isEnabled ? 'enabled' : 'disabled'}`);
+        sendResponse({ ok: true });
+        break;
+
+      case 'TOGGLE_DEBUG':
+        ui.setDebugEnabled(message.debug);
         sendResponse({ ok: true });
         break;
 

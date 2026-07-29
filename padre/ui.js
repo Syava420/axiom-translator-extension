@@ -222,4 +222,65 @@ class TranslationUI {
     element.dataset.translatedAt = String(Date.now());
     if (canUpdateClean) element.dataset.cleanedFullText = cleanTweetText(getFullTextContent(element));
   }
+
+  setDebugEnabled(enabled) {
+    this.isDebugEnabled = !!enabled;
+    const panel = document.getElementById('axiom-debug-panel');
+    if (panel) {
+      panel.style.display = this.isDebugEnabled ? 'flex' : 'none';
+    }
+    if (this.isDebugEnabled) {
+      this.logDebug('info', 'РЕЖИМ ОТЛАДКИ', 'Логирование включено. Ожидание карточек...');
+    }
+  }
+
+  logDebug(type, title, message) {
+    if (CONFIG.DEBUG) console.log(`[PadreDebug:${type}] ${title} - ${message}`);
+    if (!this.isDebugEnabled) return;
+    let panel = document.getElementById('axiom-debug-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'axiom-debug-panel';
+      panel.style.cssText = `
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        width: 380px;
+        max-height: 280px;
+        background: rgba(15, 15, 20, 0.95);
+        border: 1px solid #7c3aed;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        border-radius: 8px;
+        z-index: 999999;
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        color: #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+      `;
+      panel.innerHTML = `
+        <div style="background:#1e1b4b; padding:6px 10px; font-weight:bold; color:#a78bfa; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(124,58,237,0.3);">
+          <span>🐞 AXIOM DEBUG LOGS</span>
+          <span style="cursor:pointer; opacity:0.7; padding:0 4px;" onclick="this.closest('#axiom-debug-panel').style.display='none'">✕</span>
+        </div>
+        <div id="axiom-debug-log-list" style="padding:6px 10px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px;"></div>
+      `;
+      document.body.appendChild(panel);
+    }
+    panel.style.display = 'flex';
+    const list = panel.querySelector('#axiom-debug-log-list');
+    if (list) {
+      const item = document.createElement('div');
+      const colors = { info: '#60a5fa', success: '#4ade80', warn: '#facc15', error: '#f87171' };
+      const color = colors[type] || '#e2e8f0';
+      item.style.cssText = `line-height:1.3; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:3px; word-break:break-word; color:${color};`;
+      const time = new Date().toLocaleTimeString();
+      item.innerHTML = `<span style="opacity:0.6; color:#94a3b8;">[${time}]</span> <strong>${title}:</strong> ${message}`;
+      list.appendChild(item);
+      if (list.children.length > 50) list.removeChild(list.firstChild);
+      list.scrollTop = list.scrollHeight;
+    }
+  }
 }

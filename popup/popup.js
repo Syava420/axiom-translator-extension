@@ -81,6 +81,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) { /* tab query/send failed, tab might not be axiom/padre */ }
   });
 
+  const btnToggleDebug = document.getElementById('btnToggleDebug');
+  if (btnToggleDebug) {
+    const { debug } = await chrome.storage.local.get('debug');
+    let isDebug = !!debug;
+    btnToggleDebug.innerHTML = isDebug ? '<span class="btn-triangle">▲</span> 🐞 Отладка (Логи): ВКЛ' : '<span class="btn-triangle">▲</span> 🐞 Отладка (Логи): ВЫКЛ';
+    if (isDebug) btnToggleDebug.style.borderColor = '#30d158';
+
+    btnToggleDebug.addEventListener('click', async () => {
+      isDebug = !isDebug;
+      await chrome.storage.local.set({ debug: isDebug });
+      btnToggleDebug.innerHTML = isDebug ? '<span class="btn-triangle">▲</span> 🐞 Отладка (Логи): ВКЛ' : '<span class="btn-triangle">▲</span> 🐞 Отладка (Логи): ВЫКЛ';
+      btnToggleDebug.style.borderColor = isDebug ? '#30d158' : '';
+
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab && tab.id) {
+          await chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_DEBUG', debug: isDebug }).catch(() => {});
+        }
+      } catch (err) {}
+    });
+  }
+
   // Clear Cache Button
   btnClearCache.addEventListener('click', async () => {
     // Show loading/clearing state
