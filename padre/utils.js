@@ -180,7 +180,7 @@ function collectTranslatableTextNodes(element) {
       continue;
     }
 
-    if (trimmed.length < 3 && !_CTN_HAS_LETTER.test(trimmed)) continue;
+    if (trimmed.length < 3 && !_CTN_HAS_LETTER.test(trimmed) && !/^[>•\-*]$/.test(trimmed)) continue;
 
     let skip = false;
     for (let i = 0; i < _CTN_SKIP.length; i++) {
