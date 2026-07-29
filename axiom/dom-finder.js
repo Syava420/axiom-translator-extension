@@ -3,7 +3,7 @@ const BLOCK_TAGS = new Set(['div', 'p', 'section', 'article', 'header', 'footer'
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'details']);
 
 const RADIX_SELECTOR = '[data-radix-popper-content-wrapper]';
-const POPUP_CONTAINER_SELECTOR = RADIX_SELECTOR + ',[role="tooltip"],[class*="popover"],[class*="tooltip"],.pointer-events-auto.fixed';
+const POPUP_CONTAINER_SELECTOR = RADIX_SELECTOR + ',.MuiTooltip-popperInteractive,.base-Popper-root,[role="tooltip"],[class*="popover"],[class*="tooltip"],.pointer-events-auto.fixed';
 
 const _OB_X_PROFILE = /^https?:\/\/(x\.com|twitter\.com)\/\w/i;
 const _OB_TIME_AGO = /\b\d{1,3}[hmd]\b/i;
@@ -58,11 +58,9 @@ function _translateMetadataInPopup(popupRoot) {
     if (!text) continue;
     const trimmed = text.trim();
     if (!trimmed) continue;
-    if (isMetadataText(trimmed)) {
-      const translated = translateMetadata(trimmed);
-      if (translated && translated !== trimmed) {
-        node.textContent = _padWithOrigWhitespace(text, translated);
-      }
+    const translated = translateMetadata(trimmed);
+    if (translated && translated !== trimmed) {
+      node.textContent = _padWithOrigWhitespace(text, translated);
     }
   }
 }
@@ -101,6 +99,21 @@ function findTweetTextElements(popupRoot) {
     }
     if (CONFIG.DEBUG) console.log('[AxiomTranslator]   Community popup — no description, skip');
     return [];
+  }
+
+  const padreSpans = popupRoot.querySelectorAll('span.MuiTypography-paragraph1:not(.MuiTypography-noWrap), [class*="MuiTypography-paragraph"], p.MuiTypography-body1');
+  if (padreSpans.length > 0) {
+    const padreResults = [];
+    for (const span of padreSpans) {
+      if (span.closest('h1,h2,h3,h4,h5,h6')) continue;
+      const text = getFullTextContent(span);
+      if (text.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
+      const cleaned = cleanTweetText(text);
+      if (cleaned.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
+      if (isMetadataText(cleaned)) continue;
+      padreResults.push(span);
+    }
+    if (padreResults.length > 0) return padreResults;
   }
 
   let textCandidates = [];
