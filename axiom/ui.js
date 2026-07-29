@@ -160,8 +160,8 @@ class TranslationUI {
     btn.addEventListener('click', handler, true);
     btn.addEventListener('pointerdown', (e) => e.stopPropagation(), true);
 
-    const header = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"], [class*="profile"], [class*="header"]')
-      || popupRoot.querySelector('div > span, div > h3, div > h4')
+    const header = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"], [class*="user"], [class*="profile"], [class*="header"], [class*="head"]')
+      || popupRoot.querySelector('div > span, div > h3, div > h4, div > a')
       || popupRoot.firstElementChild;
 
     if (header && header.parentElement) {

@@ -125,10 +125,18 @@ function findTweetTextElements(popupRoot) {
     if (tn === 'H1' || tn === 'H2' || tn === 'H3' || tn === 'H4' || tn === 'H5' || tn === 'H6') continue;
     if (el.closest('h1,h2,h3,h4,h5,h6')) continue;
 
+    const fullText = getFullTextContent(el);
+    if (fullText.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
+
+    const cleanedText = cleanTweetText(fullText);
+    if (cleanedText.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
+
     const ancestorLink = tn === 'A' ? el : el.closest('a');
     if (ancestorLink && ancestorLink.href) {
       if (ancestorLink.href.includes('/communities/')) continue;
-      if (_OB_X_PROFILE.test(ancestorLink.href) && !ancestorLink.href.includes('/status/')) continue;
+      if (_OB_X_PROFILE.test(ancestorLink.href) && !ancestorLink.href.includes('/status/')) {
+        if (cleanedText.length < 30 || (_OB_HANDLE_START.test(cleanedText) && cleanedText.length < 40)) continue;
+      }
     }
 
     if (mediaContainers) {
@@ -138,12 +146,6 @@ function findTweetTextElements(popupRoot) {
       }
       if (insideMedia) continue;
     }
-
-    const fullText = getFullTextContent(el);
-    if (fullText.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
-
-    const cleanedText = cleanTweetText(fullText);
-    if (cleanedText.length < CONFIG.DETECTION.MIN_TWEET_TEXT_LENGTH) continue;
 
     if (isMetadataText(cleanedText)) continue;
 
@@ -310,13 +312,15 @@ function findTweetTextElements(popupRoot) {
       const etn = el.tagName;
       if (etn === 'H1' || etn === 'H2' || etn === 'H3' || etn === 'H4' || etn === 'H5' || etn === 'H6') continue;
       if (el.closest('h1,h2,h3,h4,h5,h6')) continue;
+      const eText = cleanTweetText(getFullTextContent(el));
+      if (eText.length < 15) continue;
       const eLink = etn === 'A' ? el : el.closest('a');
       if (eLink && eLink.href) {
         if (eLink.href.includes('/communities/')) continue;
-        if (_OB_X_PROFILE.test(eLink.href) && !eLink.href.includes('/status/')) continue;
+        if (_OB_X_PROFILE.test(eLink.href) && !eLink.href.includes('/status/')) {
+          if (eText.length < 30) continue;
+        }
       }
-      const eText = cleanTweetText(getFullTextContent(el));
-      if (eText.length < 15) continue;
       if (_OB_HAS_CJK.test(eText)) continue;
       if (isRussianText(eText)) continue;
       if (isMetadataText(eText)) continue;
