@@ -92,7 +92,7 @@ const CONFIG = {
       name: 'Google Translate',
       url: 'https://translate.googleapis.com/translate_a/single',
       params: { client: 'gtx', sl: 'en', tl: 'ru', dt: 't' },
-      timeout: 2000,
+      timeout: 6000,
       breakerThreshold: 5,
       breakerResetMs: 15000
     },
@@ -108,28 +108,28 @@ const CONFIG = {
       ],
       engine: 'yandex',
       fallbackEngine: 'duckduckgo',
-      timeout: 2000,
+      timeout: 6000,
       breakerThreshold: 3,
       breakerResetMs: 20000
     },
     SIMPLYTRANSLATE: {
       name: 'SimplyTranslate',
       url: 'https://simplytranslate.org/api/translate/',
-      timeout: 1500,
+      timeout: 5000,
       breakerThreshold: 3,
       breakerResetMs: 30000
     },
     LINGVA: {
       name: 'Lingva Translate',
       instances: ['https://translate.plausibility.cloud'],
-      timeout: 1500,
+      timeout: 5000,
       breakerThreshold: 2,
       breakerResetMs: 30000
     },
     MYMEMORY: {
       name: 'MyMemory',
       url: 'https://api.mymemory.translated.net/get',
-      timeout: 1800,
+      timeout: 5000,
       breakerThreshold: 1,
       breakerResetMs: 120000
     }

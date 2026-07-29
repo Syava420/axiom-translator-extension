@@ -95,7 +95,7 @@ class TranslationService {
       return cached;
     }
 
-    if (text.length > 480) {
+    if (text.length > 1200) {
       const result = await this._translateLong(text, hash, priority, skipStats);
       if (result && !skipStats) {
         this._saveTweet(text, result);
