@@ -17,11 +17,13 @@ function textHash(text) {
 }
 
 function isRussianText(text) {
+  let clean = text.replace(/^(Регистрация:?\s*[\w.\s]+\s*|\d[\d,.]*[KMBkmb]?\s*(подписчик|подписчиков|подписчика|подписок|читателей)\s*)+/gi, '').trim();
+  if (!clean) clean = text;
   let cyr = 0, lat = 0;
-  const len = text.length;
+  const len = clean.length;
   const checkLen = len > 150 ? 150 : len;
   for (let i = 0; i < checkLen; i++) {
-    const c = text.charCodeAt(i);
+    const c = clean.charCodeAt(i);
     if (c >= 0x0400 && c <= 0x04FF) cyr++;
     else if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) lat++;
   }
@@ -30,8 +32,8 @@ function isRussianText(text) {
 
 
 const _MT_HANDLE = /^@\w{1,15}$/;
-const _MT_JOINED = /^Joined\s/i;
-const _MT_FOLLOWER_COUNT = /^\d[\d,.]*[KMBkmb]?\s*(followers|following|members)/i;
+const _MT_JOINED = /^(Joined|Регистрация:?)\s/i;
+const _MT_FOLLOWER_COUNT = /^\d[\d,.]*[KMBkmb]?\s*(followers|following|members|подписчик|подписчиков|подписчика|подписок|читателей)/i;
 const _MT_NUMBER = /^\d[\d,.]*[KMBkmb]?\s*$/i;
 const _MT_TIME_AGO = /^\d+[hms]$/i;
 const _MT_REPLYING = /^Replying to\s+@\w+$/i;
@@ -48,8 +50,8 @@ const _MT_BROWSER_SUPPORT = /^Your browser does not support/i;
 const _MT_ENGAGEMENT = /^\d+\s*(likes?|retweets?|replies|quote tweets?|comments?)$/i;
 const _MT_CREATED_BY = /^Created by$/i;
 const _MT_MEMBERS = /^\d[\d,.]*[KMBkmb]?\s*Members$/i;
-const _MT_STANDALONE_UI = /^(Following|Followers|Pinned|Joined|Likes?|Retweets?|Replies|Posts?)$/i;
-const _MT_MONTH_YEAR = /^(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|June?|July?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\s+\d{4}$/i;
+const _MT_STANDALONE_UI = /^(Following|Followers|Pinned|Joined|Likes?|Retweets?|Replies|Posts?|Регистрация|Подписчики|Подписки)$/i;
+const _MT_MONTH_YEAR = /^(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|June?|July?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?|янв(аря)?|фев(раля)?|мар(та)?|апр(еля)?|май|мая|июн(я)?|июл(я)?|авг(уста)?|сен(тября)?|окт(ября)?|ноя(бря)?|дек(абря)?)\s+\d{4}$/i;
 const _MT_PROMOTED = /^(Promoted|Ad)$/i;
 const _MT_UNAVAILABLE = /^(Unavailable|Content unavailable|This Post is unavailable)$/i;
 const _MT_SEE_LESS = /^(See less|Показать меньше)$/i;
@@ -62,10 +64,10 @@ const _SK_MENTION = /^@\w{1,15}(\s*\+?\s*)$/;
 const _SK_HANDLE_IN_TEXT = /@\w{1,15}/;
 const _SK_HANDLE_EXTRACT = /^.*?@\w{1,15}\s*/;
 const _SK_TIME_STRIP = /^\d+[hmsд]\s*/i;
-const _SK_JOINED = /^Joined\s/i;
-const _SK_JOINED_EXACT = /^Joined$/i;
-const _SK_FOLLOWER = /^\d[\d,.]*[KMBkmb]?\s*(followers|following)/i;
-const _SK_FOLLOWING = /^(Following|Followers|See profile.*)$/i;
+const _SK_JOINED = /^(Joined|Регистрация:?)\s/i;
+const _SK_JOINED_EXACT = /^(Joined|Регистрация:?)$/i;
+const _SK_FOLLOWER = /^\d[\d,.]*[KMBkmb]?\s*(followers|following|подписчик|подписчиков|подписчика|подписок|читателей)/i;
+const _SK_FOLLOWING = /^(Following|Followers|Подписчики|Подписки|See profile.*)$/i;
 const _SK_TIME_AGO = /^\d+[hmsд]$/i;
 const _SK_TIME_UNIT = /^[hmsд]$/i;
 const _SK_CREATED = /^Created\s+(at\s+)?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i;
