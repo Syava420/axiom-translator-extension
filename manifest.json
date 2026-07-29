@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Axiom Translator",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Автоматический перевод твитов на русский язык для axiom.trade с сохранением крипто-сленга.",
   "permissions": [
     "storage",
@@ -9,6 +9,8 @@
   ],
   "host_permissions": [
     "https://axiom.trade/*",
+    "https://trade.padre.gg/*",
+    "https://*.padre.gg/*",
     "https://translate.googleapis.com/*",
     "https://www.google.com/*",
     "https://api.mymemory.translated.net/*",
@@ -28,7 +30,11 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://axiom.trade/*"],
+      "matches": [
+        "https://axiom.trade/*",
+        "https://trade.padre.gg/*",
+        "https://*.padre.gg/*"
+      ],
       "js": [
         "popup/errorHandler.js",
         "axiom/constants.js",

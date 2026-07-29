@@ -2,7 +2,9 @@
   'use strict';
 
   const hostname = window.location.hostname;
-  if (hostname !== 'axiom.trade' && !hostname.endsWith('.axiom.trade')) return;
+  const isSupported = hostname === 'axiom.trade' || hostname.endsWith('.axiom.trade') ||
+                      hostname === 'padre.gg' || hostname.endsWith('.padre.gg');
+  if (!isSupported) return;
 
   if (CONFIG.DEBUG) console.log('[AxiomTranslator] Extension loaded on', window.location.href);
 

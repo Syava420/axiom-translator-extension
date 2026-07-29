@@ -3,7 +3,7 @@ const BLOCK_TAGS = new Set(['div', 'p', 'section', 'article', 'header', 'footer'
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'details']);
 
 const RADIX_SELECTOR = '[data-radix-popper-content-wrapper]';
-const POPUP_CONTAINER_SELECTOR = RADIX_SELECTOR + ',[role="tooltip"],.pointer-events-auto.fixed';
+const POPUP_CONTAINER_SELECTOR = RADIX_SELECTOR + ',[role="tooltip"],[class*="popover"],[class*="tooltip"],.pointer-events-auto.fixed';
 
 const _OB_X_PROFILE = /^https?:\/\/(x\.com|twitter\.com)\/\w/i;
 const _OB_TIME_AGO = /\b\d{1,3}[hmd]\b/i;
