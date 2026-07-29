@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tweet Translator",
-  "version": "1.1.0",
+  "version": "1.4.0",
   "description": "Мгновенный перевод твитов на русский — axiom.trade, padre.gg",
   "permissions": [
     "storage",
@@ -10,6 +10,7 @@
   "host_permissions": [
     "https://axiom.trade/*",
     "https://trade.padre.gg/*",
+    "https://*.padre.gg/*",
     "https://translate.googleapis.com/*",
     "https://api.mymemory.translated.net/*",
     "https://api.fxtwitter.com/*",
@@ -28,7 +29,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://trade.padre.gg/*"],
+      "matches": [
+        "https://trade.padre.gg/*",
+        "https://*.padre.gg/*"
+      ],
       "js": ["padre/api-interceptor.js"],
       "run_at": "document_start",
       "world": "MAIN"
@@ -49,7 +53,10 @@
       "all_frames": false
     },
     {
-      "matches": ["https://trade.padre.gg/*"],
+      "matches": [
+        "https://trade.padre.gg/*",
+        "https://*.padre.gg/*"
+      ],
       "js": [
         "padre/constants.js",
         "padre/utils.js",

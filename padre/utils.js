@@ -20,12 +20,10 @@ function textHash(text) {
 }
 
 function isRussianText(text) {
-  let clean = text.replace(/^(Регистрация:?\s*[\w.\s]+\s*|\d[\d,.]*[KMBkmb]?\s*(подписчик|подписчиков|подписчика|подписок|читателей)\s*)+/gi, '').trim();
-  if (!clean) clean = text;
   let cyr = 0, lat = 0;
-  const len = Math.min(clean.length, 150);
+  const len = Math.min(text.length, 150);
   for (let i = 0; i < len; i++) {
-    const c = clean.charCodeAt(i);
+    const c = text.charCodeAt(i);
     if (c >= 0x0400 && c <= 0x04FF) cyr++;
     else if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) lat++;
   }
@@ -75,10 +73,8 @@ function isInsideUrlAnchor(node) {
   while (el) {
     if (el.tagName === 'A') {
       const href = el.getAttribute('href') || '';
-      const linkText = (el.textContent || '').trim();
-
-      if (linkText.length >= 25 || href.includes('x.com') || href.includes('twitter.com')) return false;
       if (!href.startsWith('http') && !href.startsWith('//')) return false;
+      const linkText = (el.textContent || '').trim();
 
       if (linkText.length > 120) return false;
 
