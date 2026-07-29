@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Axiom Translator",
   "version": "1.4.0",
-  "description": "Мгновенный перевод твитов на русский — axiom.trade, padre.gg",
+  "description": "Автоматический перевод твитов на русский язык для axiom.trade с сохранением крипто-сленга.",
   "permissions": [
     "storage",
     "activeTab"
@@ -40,10 +40,16 @@
     {
       "matches": ["https://axiom.trade/*"],
       "js": [
+        "popup/errorHandler.js",
         "axiom/constants.js",
         "axiom/utils.js",
         "axiom/cache.js",
         "axiom/diagnostics.js",
+        "axiom/preprocessor.js",
+        "axiom/rate-limiter.js",
+        "axiom/queue.js",
+        "axiom/dom-finder.js",
+        "axiom/pre-cacher.js",
         "axiom/translator.js",
         "axiom/observer.js",
         "axiom/ui.js",
@@ -58,6 +64,7 @@
         "https://*.padre.gg/*"
       ],
       "js": [
+        "popup/errorHandler.js",
         "padre/constants.js",
         "padre/utils.js",
         "padre/cache.js",
