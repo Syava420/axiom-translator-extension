@@ -17,86 +17,20 @@ class TranslationUI {
         opacity: 1;
         transition: opacity 0.2s ease;
       }
-      [data-translated="true"]::after {
-        content: 'RU';
-        position: absolute;
-        top: -6px;
-        right: -8px;
-        font-size: 7px;
-        font-weight: 700;
-        background: ${CONFIG.UI.BADGE_COLOR};
-        color: white;
-        padding: 1px 3px;
-        border-radius: 3px;
-        opacity: 0.8;
-        pointer-events: none;
-        line-height: 1.2;
-        letter-spacing: 0.5px;
-        z-index: 10;
-      }
       [data-translated="original"] {
         position: relative;
-      }
-      [data-translated="original"]::after {
-        content: 'EN';
-        position: absolute;
-        top: -6px;
-        right: -8px;
-        font-size: 7px;
-        font-weight: 700;
-        background: #6b7280;
-        color: white;
-        padding: 1px 3px;
-        border-radius: 3px;
-        opacity: 0.8;
-        pointer-events: none;
-        line-height: 1.2;
-        letter-spacing: 0.5px;
-        z-index: 10;
       }
       [data-translated="failed"] {
         opacity: 1;
       }
-      [data-translated="true"]:hover,
-      [data-translated="original"]:hover {
-        cursor: pointer;
-        text-decoration-line: underline;
-        text-decoration-style: dotted;
-        text-decoration-color: ${CONFIG.UI.BADGE_COLOR};
-        text-underline-offset: 3px;
-      }
       .axiom-tx-panel {
         padding: 6px 10px;
         margin: 4px 0 0 0;
-        border-top: 1px solid rgba(124, 58, 237, 0.2);
         font: inherit;
         line-height: inherit;
         color: inherit;
         cursor: pointer;
         position: relative;
-      }
-      .axiom-tx-panel[data-translated="true"]::after {
-        content: 'RU';
-        position: absolute;
-        top: -6px;
-        right: -4px;
-        font-size: 7px;
-        font-weight: 700;
-        background: ${CONFIG.UI.BADGE_COLOR};
-        color: white;
-        padding: 1px 3px;
-        border-radius: 3px;
-        opacity: 0.8;
-        pointer-events: none;
-        line-height: 1.2;
-        letter-spacing: 0.5px;
-        z-index: 10;
-      }
-      .axiom-tx-panel:hover {
-        text-decoration-line: underline;
-        text-decoration-style: dotted;
-        text-decoration-color: ${CONFIG.UI.BADGE_COLOR};
-        text-underline-offset: 3px;
       }
     `;
     document.head.appendChild(style);

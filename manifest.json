@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Tweet Translator",
+  "name": "Axiom Translator",
   "version": "1.4.0",
   "description": "Мгновенный перевод твитов на русский — axiom.trade, padre.gg",
   "permissions": [
