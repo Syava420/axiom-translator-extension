@@ -186,7 +186,7 @@ function isInsideUrlAnchor(node) {
 
 function collectTranslatableTextNodes(element) {
   const elText = getSpacedTextContent(element);
-  const isBroadPopup = _SK_HANDLE_IN_TEXT.test(elText) && _SK_JOINED.test(elText);
+  const isBroadPopup = elText.length > 500 && _SK_HANDLE_IN_TEXT.test(elText) && _SK_JOINED.test(elText);
 
   const result = [];
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
@@ -205,7 +205,10 @@ function collectTranslatableTextNodes(element) {
     if (node.parentElement?.closest?.('a[href*="/communities/"]')) continue;
 
     const _profileLink = node.parentElement?.closest?.('a[href*="x.com/"],a[href*="twitter.com/"]');
-    if (_profileLink && !_profileLink.href?.includes('/status/')) continue;
+    if (_profileLink && !_profileLink.href?.includes('/status/')) {
+      const pText = (_profileLink.textContent || '').trim();
+      if (pText.length < 35 || _SK_HANDLE_WORD.test(text.trim())) continue;
+    }
 
     if (node.parentElement?.className?.includes?.("font-['IBM_Plex_Sans']")) continue;
 
@@ -260,6 +263,10 @@ function collectTranslatableTextNodes(element) {
           collectingTweet = true;
           result.push({ node: node, text: afterTime, raw: text });
         }
+      } else if (trimmed.length >= 20 && !isMetadataText(trimmed)) {
+        foundHandle = true;
+        collectingTweet = true;
+        result.push({ node: node, text: trimmed, raw: text });
       }
       continue;
     }
