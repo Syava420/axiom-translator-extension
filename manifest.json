@@ -31,10 +31,15 @@
   "content_scripts": [
     {
       "matches": [
-        "https://axiom.trade/*",
         "https://trade.padre.gg/*",
         "https://*.padre.gg/*"
       ],
+      "js": ["padre/api-interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://axiom.trade/*"],
       "js": [
         "popup/errorHandler.js",
         "axiom/constants.js",
@@ -50,6 +55,25 @@
         "axiom/observer.js",
         "axiom/ui.js",
         "axiom/content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://trade.padre.gg/*",
+        "https://*.padre.gg/*"
+      ],
+      "js": [
+        "popup/errorHandler.js",
+        "padre/constants.js",
+        "padre/utils.js",
+        "padre/cache.js",
+        "padre/diagnostics.js",
+        "padre/translator.js",
+        "padre/padre-observer.js",
+        "padre/ui.js",
+        "padre/content.js"
       ],
       "run_at": "document_idle",
       "all_frames": false
