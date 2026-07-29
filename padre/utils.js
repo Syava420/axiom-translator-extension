@@ -98,10 +98,10 @@ const _CTN_HANDLE_START = /^@\w{1,15}(\s*\+?\s*)$/;
 const _CTN_AFTER_HANDLE = /^.*?@\w{1,15}\s*/;
 const _CTN_AFTER_TIME = /^\d+[hmsд]\s*/i;
 const _CTN_SKIP = [
-  /^(Joined|Регистрация:?)\s/i,
-  /^(Joined|Регистрация:?)$/i,
-  /^\d[\d,.]*[KMBkmb]?\s*(followers|following|подписчик|подписчиков|подписчика|подписок|читателей)/i,
-  /^(Following|Followers|Подписчики|Подписки|See profile.*)$/i,
+  /^Joined\s/i,
+  /^Joined$/i,
+  /^\d[\d,.]*[KMBkmb]?\s*(followers|following)/i,
+  /^(Following|Followers|See profile.*)$/i,
   /^\d+[hmsд]$/i,
   /^[hmsд]$/i,
   /^Created\s+(at\s+)?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i,
@@ -180,7 +180,7 @@ function collectTranslatableTextNodes(element) {
       continue;
     }
 
-    if (trimmed.length < 3 && !_CTN_HAS_LETTER.test(trimmed) && !/^[>•\-*]$/.test(trimmed)) continue;
+    if (trimmed.length < 3 && !_CTN_HAS_LETTER.test(trimmed)) continue;
 
     let skip = false;
     for (let i = 0; i < _CTN_SKIP.length; i++) {

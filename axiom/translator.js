@@ -1,13 +1,283 @@
-/**
- * Axiom Translator - Translation Service
- * Core translation routing, fallback, and stats reporting.
- */
+class RateLimitError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
+
+const _PP_NL_TRIM = / *\n */g;
+const _PP_MULTI_SPACE = /  +/g;
+
+const _API_ERROR_RE = /QUERY\.LENGTH|LIMIT\.EXCEEDED|MAX\.ALLOWED|MYMEMORY WARNING|YOU USED ALL|INVALID LANGUAGE PAIR/i;
+const _MOZHI_ERROR_RE = /QUERY\.LENGTH|LIMIT\.EXCEEDED|MAX\.ALLOWED/i;
+
+const _PP_RT_PREFIX = /^(RT\s+@[A-Za-z_][A-Za-z0-9_]{0,14}:?\s*)/i;
+const _PP_PLACEHOLDER = /§\s*(\d+)\s*§/g;
+const _PP_SPACE_PUNCT = / ([.,;:!?)])/g;
+const _PP_NEWLINE_PUNCT = /(\n+)\s*([.!?,;:])\s*/g;
+const _PP_DUP_PUNCT = /([.,;:!?])\1+/g;
+const _PP_NL_DOT = /\n\s*\.(?!\.)/g;
+const _PP_LEADING_DOT = /^\.(?!\.)\s*/;
+const _PP_TRAILING_COMMA_NL = /,(\s*\n\n)/g;
+const _PP_TRAILING_COMMA = /,\s*$/;
+const _PP_SPACE_AFTER_PUNCT = /([.,;:!?])([A-ZА-Яa-zа-я])/g;
+const _PP_HTML_APOS = /&#39;/g;
+const _PP_HTML_QUOT = /&quot;/g;
+const _PP_HTML_AMP = /&amp;/g;
+const _PP_SENT_SPLIT = /(?<=[.!?])\s+/;
+const _PP_STRIP_PH = /§\d+§/g;
+const _PP_RESTORE_PH = /§(\d+)§/g;
+const _PP_WORD_SPLIT = /\s+/;
+
+class TextPreprocessor {
+  constructor() {
+    this._buildRegex();
+  }
+
+  _buildRegex() {
+    const cp = CONFIG.CRYPTO_PRESERVE;
+    const multi = [...cp.MULTI_WORD].sort((a, b) => b.length - a.length);
+    const single = [...cp.SINGLE_WORD].sort((a, b) => b.length - a.length);
+
+    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    const parts = [];
+    for (const term of multi) parts.push(esc(term));
+    for (const term of single) parts.push(esc(term));
+
+    this._regex = new RegExp(
+      '(' +
+        '\\$[A-Za-z][A-Za-z0-9]{0,15}' +
+        '|@[A-Za-z_][A-Za-z0-9_]{0,14}' +
+        '|https?:\\/\\/[^\\s<>\"]{3,}' +
+        '|\\bt\\.co\\/[A-Za-z0-9]+' +
+        '|\\b(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\/[^\\s<>\"]*)?' +
+        '|\\b(?:' + parts.join('|') + ')\\b' +
+      ')',
+      'gi'
+    );
+  }
+
+  preprocess(text) {
+    const placeholders = [];
+    let processed = text.replace(_PP_RT_PREFIX, (match) => {
+      const idx = placeholders.length;
+      placeholders.push(match);
+      return '§' + idx + '§ ';
+    });
+    const cleanText = processed.replace(this._regex, (match) => {
+      const idx = placeholders.length;
+      placeholders.push(match);
+      return '§' + idx + '§';
+    });
+    return { cleanText, placeholders };
+  }
+
+  postprocess(translated, placeholders) {
+    if (placeholders.length === 0) return this._cleanArtifacts(translated);
+
+    let result = this._cleanArtifacts(translated);
+
+    const restored = new Set();
+    result = result.replace(_PP_PLACEHOLDER, (match, idx) => {
+      const i = parseInt(idx, 10);
+      if (i < placeholders.length) {
+        restored.add(i);
+        return placeholders[i];
+      }
+      return match;
+    });
+
+    for (let i = 0; i < placeholders.length; i++) {
+      if (!restored.has(i)) result += ' ' + placeholders[i];
+    }
+
+    result = result.replace(_PP_SPACE_PUNCT, '$1');
+    result = result.replace(_PP_NEWLINE_PUNCT, '$2$1');
+    result = result.replace(_PP_SPACE_PUNCT, '$1');
+    result = result.replace(_PP_DUP_PUNCT, '$1');
+    result = result.replace(_PP_NL_DOT, '\n');
+    result = result.replace(_PP_LEADING_DOT, '');
+    result = result.replace(_PP_NL_TRIM, '\n');
+
+    result = result.replace(_PP_TRAILING_COMMA_NL, '$1').replace(_PP_TRAILING_COMMA, '');
+
+    return result.replace(_PP_MULTI_SPACE, ' ').trim();
+  }
+
+  _cleanArtifacts(text) {
+    let r = text;
+    r = r.replace(_PP_MULTI_SPACE, ' ');
+    r = r.replace(_PP_SPACE_PUNCT, '$1');
+    r = r.replace(_PP_SPACE_AFTER_PUNCT, '$1 $2');
+    r = r.replace(_PP_HTML_APOS, "'");
+    r = r.replace(_PP_HTML_QUOT, '"');
+    r = r.replace(_PP_HTML_AMP, '&');
+    r = r.trim();
+    return r;
+  }
+}
+
+
+class CircuitBreaker {
+  constructor(name, failureThreshold, resetTimeoutMs) {
+    this.name = name;
+    this.failureCount = 0;
+    this.failureThreshold = failureThreshold;
+    this.resetTimeoutMs = resetTimeoutMs;
+    this.state = 'CLOSED';
+    this.lastFailureTime = 0;
+    this._halfOpenProbing = false;
+  }
+
+  isDisabled() {
+    if (this.state === 'CLOSED') return false;
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailureTime > this.resetTimeoutMs) {
+        this.state = 'HALF_OPEN';
+        if (this._halfOpenProbing) return true;
+        this._halfOpenProbing = true;
+        return false;
+      }
+      return true;
+    }
+    if (this._halfOpenProbing) return true;
+    this._halfOpenProbing = true;
+    return false;
+  }
+
+  recordSuccess() {
+    this.failureCount = 0;
+    this.state = 'CLOSED';
+    this._halfOpenProbing = false;
+  }
+
+  recordFailure() {
+    const wasHalfOpen = this.state === 'HALF_OPEN';
+    this._halfOpenProbing = false;
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+    if (wasHalfOpen || this.failureCount >= this.failureThreshold) {
+      this.state = 'OPEN';
+    }
+  }
+}
+
+
+class RateLimiter {
+  constructor(maxRequests, windowMs) {
+    this.maxRequests = maxRequests;
+    this.windowMs = windowMs;
+    this.timestamps = [];
+    this._head = 0;
+  }
+
+  canProceed() {
+    const now = Date.now();
+    const cutoff = now - this.windowMs;
+    while (this._head < this.timestamps.length && this.timestamps[this._head] <= cutoff) {
+      this._head++;
+    }
+    if (this._head > 100) {
+      this.timestamps = this.timestamps.slice(this._head);
+      this._head = 0;
+    }
+    return (this.timestamps.length - this._head) < this.maxRequests;
+  }
+
+  record() {
+    this.timestamps.push(Date.now());
+  }
+
+  async waitAndProceed() {
+    if (this.canProceed()) {
+      this.record();
+      return;
+    }
+    const oldest = this.timestamps[this._head];
+    const waitMs = Math.max(0, this.windowMs - (Date.now() - oldest) + 1);
+    await new Promise(r => setTimeout(r, waitMs));
+    while (!this.canProceed()) {
+      const nextOldest = this.timestamps[this._head];
+      const nextWait = Math.max(0, this.windowMs - (Date.now() - nextOldest) + 1);
+      await new Promise(r => setTimeout(r, nextWait));
+    }
+    this.record();
+  }
+}
+
+
+class TranslationQueue {
+  constructor(translateFn, concurrency = CONFIG.QUEUE.MAX_CONCURRENCY) {
+    this.translateFn = translateFn;
+    this.concurrency = concurrency;
+    this.queue = [];
+    this.priorityQueue = [];
+    this.active = 0;
+    this.dedupeMap = new Map();
+  }
+
+  enqueue(text, priority = false) {
+    if (this.dedupeMap.has(text)) {
+      if (priority) {
+        const idx = this.queue.findIndex(item => item.text === text);
+        if (idx !== -1) {
+          const [item] = this.queue.splice(idx, 1);
+          this.priorityQueue.push(item);
+          this._processNext();
+        }
+      }
+      return this.dedupeMap.get(text);
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      if (priority) {
+        this.priorityQueue.push({ text, resolve, reject });
+      } else {
+        this.queue.push({ text, resolve, reject });
+      }
+      this._processNext();
+    });
+
+    this.dedupeMap.set(text, promise);
+    promise.finally(() => this.dedupeMap.delete(text));
+
+    return promise;
+  }
+
+  _processNext() {
+    while (this.priorityQueue.length > 0 && this.active < this.concurrency + 5) {
+      this.active++;
+      const item = this.priorityQueue.shift();
+      this._run(item.text, item.resolve, item.reject, true);
+    }
+    while (this.active < this.concurrency && this.queue.length > 0) {
+      this.active++;
+      const item = this.queue.shift();
+      this._run(item.text, item.resolve, item.reject, false);
+    }
+  }
+
+  async _run(text, resolve, reject, priority) {
+    try {
+      const result = await this.translateFn(text, priority);
+      resolve(result);
+    } catch (err) {
+      reject(err);
+    } finally {
+      this.active--;
+      this._processNext();
+    }
+  }
+}
+
 
 class TranslationService {
-  constructor(cache, diagnostics, customDictionary) {
+  constructor(cache, diagnostics) {
     this.cache = cache;
     this.diagnostics = diagnostics || null;
-    this.preprocessor = new TextPreprocessor(customDictionary);
+    this.preprocessor = new TextPreprocessor();
     this.rateLimiter = new RateLimiter(
       CONFIG.QUEUE.RATE_LIMIT_MAX,
       CONFIG.QUEUE.RATE_LIMIT_WINDOW_MS
@@ -60,12 +330,11 @@ class TranslationService {
     ];
 
     this.queue = new TranslationQueue(
-      (text, priority, skipStats) => this._translateWithFallback(text, priority, skipStats),
+      (text, priority) => this._translateWithFallback(text, priority),
       CONFIG.QUEUE.MAX_CONCURRENCY
     );
 
     this.stats = { translated: 0, cached: 0, errors: 0, preserved: 0 };
-    this._reportedStats = { translated: 0, cached: 0, errors: 0, preserved: 0 };
     this.lastUsedApi = '';
     this._reportScheduled = false;
     this._reportTimer = null;
@@ -77,7 +346,7 @@ class TranslationService {
   }
 
 
-  async translate(text, priority = false, skipStats = false) {
+  async translate(text, priority = false) {
     if (!text || text.length < 3) return null;
     if (text.length > 4500) {
       text = text.substring(0, 4500);
@@ -86,60 +355,28 @@ class TranslationService {
     const hash = textHash(text);
     const cached = this.cache.get(hash);
     if (cached) {
-      if (!skipStats) {
-        this.stats.cached++;
-        if (this.diagnostics) this.diagnostics.recordCacheHit();
-        this._reportStats();
-        this._saveTweet(text, cached);
-      }
+      this.stats.cached++;
+      if (this.diagnostics) this.diagnostics.recordCacheHit();
+      this._reportStats();
       return cached;
     }
 
-    if (text.length > 1200) {
-      const result = await this._translateLong(text, hash, priority, skipStats);
-      if (result && !skipStats) {
-        this._saveTweet(text, result);
-      }
-      return result;
+    if (text.length > 480) {
+      return this._translateLong(text, hash, priority);
     }
 
     try {
-      const result = await this.queue.enqueue(text, priority, skipStats);
-      if (result && !skipStats) {
-        this.stats.translated++;
-        this._reportStats();
-        this._saveTweet(text, result);
-      }
+      const result = await this.queue.enqueue(text, priority);
       return result;
     } catch (err) {
-      if (!skipStats) {
-        this.stats.errors++;
-        this._reportStats();
-      }
+      this.stats.errors++;
+      this._reportStats();
       return null;
     }
   }
 
-  _saveTweet(english, russian) {
-    if (!english || !russian) return;
-    if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.local) return;
-    chrome.storage.local.get(['saved_english_tweets']).then(data => {
-      const list = data.saved_english_tweets || [];
-      const exists = list.some(item => (typeof item === 'string' ? item === english : item.english === english));
-      if (!exists) {
-        list.push({ english, russian, timestamp: Date.now() });
-        if (list.length > 5000) list.shift();
-        chrome.storage.local.set({ saved_english_tweets: list }).catch(() => {});
-      }
-    }).catch(() => {});
-  }
 
-  _saveEnglishTweet(text, translation) {
-    this._saveTweet(text, translation);
-  }
-
-
-  async _translateLong(text, hash, priority, skipStats = false) {
+  async _translateLong(text, hash, priority) {
     let paras = text.split('\n\n');
     let sep = '\n\n';
     if (paras.length <= 1 && text.includes('\n')) {
@@ -173,9 +410,9 @@ class TranslationService {
 
     try {
       for (let i = 0; i < toTranslate.length; i += 2) {
-        const batch = [this.queue.enqueue(toTranslate[i].text, priority, true).catch(() => null)];
+        const batch = [this.queue.enqueue(toTranslate[i].text, priority).catch(() => null)];
         if (i + 1 < toTranslate.length) {
-          batch.push(this.queue.enqueue(toTranslate[i + 1].text, priority, true).catch(() => null));
+          batch.push(this.queue.enqueue(toTranslate[i + 1].text, priority).catch(() => null));
         }
         const br = await Promise.all(batch);
         toTranslate[i]._result = br[0];
@@ -184,10 +421,8 @@ class TranslationService {
 
       if (toTranslate.every(t => !t._result)) {
         console.warn('[AxiomTranslator] Long text: ALL ' + toTranslate.length + ' chunks failed for "' + text.substring(0, 80) + '..." (' + text.length + 'ch)');
-        if (!skipStats) {
-          this.stats.errors++;
-          this._reportStats();
-        }
+        this.stats.errors++;
+        this._reportStats();
         return null;
       }
 
@@ -203,19 +438,15 @@ class TranslationService {
 
       const result = paraResults.join(sep);
       this.cache.set(hash, result);
-      if (!skipStats) {
-        this.stats.translated++;
-        this._reportStats();
-      }
+      this.stats.translated++;
+      this._reportStats();
       if (CONFIG.DEBUG) {
         console.log('[AxiomTranslator] Chunked ' + toTranslate.length + ' parts (' + paras.length + ' paras) for ' + text.length + ' chars');
       }
       return result;
     } catch (err) {
-      if (!skipStats) {
-        this.stats.errors++;
-        this._reportStats();
-      }
+      this.stats.errors++;
+      this._reportStats();
       return null;
     }
   }
@@ -248,10 +479,10 @@ class TranslationService {
   }
 
 
-  async _translateWithFallback(text, priority = false, skipStats = false) {
+  async _translateWithFallback(text, priority = false) {
     const { cleanText, placeholders } = this.preprocessor.preprocess(text);
 
-    if (!skipStats && placeholders.length > 0) {
+    if (placeholders.length > 0) {
       this.stats.preserved += placeholders.length;
     }
 
@@ -274,7 +505,9 @@ class TranslationService {
         const finalResult = this.preprocessor.postprocess(chromeRaw, placeholders);
         const hash = textHash(text);
         this.cache.set(hash, finalResult);
+        this.stats.translated++;
         this.lastUsedApi = CONFIG.APIS.CHROME_TRANSLATOR.name;
+        this._reportStats();
         if (CONFIG.DEBUG) {
           console.log('[AxiomTranslator] OK via Chrome Translator (' + (Date.now() - t0) + 'ms): "' + finalResult.substring(0, 60) + '..."');
         }
@@ -314,7 +547,9 @@ class TranslationService {
         const finalResult = this.preprocessor.postprocess(rawResult.raw, placeholders);
         const hash = textHash(text);
         this.cache.set(hash, finalResult);
+        this.stats.translated++;
         this.lastUsedApi = rawResult.api.name;
+        this._reportStats();
         if (CONFIG.DEBUG) {
           console.log('[AxiomTranslator] OK via ' + rawResult.api.name + ' (' + (Date.now() - t0) + 'ms): "' + finalResult.substring(0, 60) + '..."');
         }
@@ -326,7 +561,9 @@ class TranslationService {
         const finalResult = this.preprocessor.postprocess(result, placeholders);
         const hash = textHash(text);
         this.cache.set(hash, finalResult);
+        this.stats.translated++;
         this.lastUsedApi = available[0].name;
+        this._reportStats();
         if (CONFIG.DEBUG) {
           console.log('[AxiomTranslator] OK via ' + available[0].name + ' (solo, ' + (Date.now() - t0) + 'ms)');
         }
@@ -689,11 +926,11 @@ class TranslationService {
   _reportStats() {
     if (this._reportScheduled || this._reportTimer) return;
     const now = Date.now();
-    if (this._lastReportTime && now - this._lastReportTime < 2000) {
+    if (this._lastReportTime && now - this._lastReportTime < 3000) {
       this._reportTimer = setTimeout(() => {
         this._reportTimer = null;
         this._reportStats();
-      }, 2000 - (now - this._lastReportTime));
+      }, 3000 - (now - this._lastReportTime));
       return;
     }
     this._reportScheduled = true;
@@ -701,47 +938,16 @@ class TranslationService {
     const schedule = window.requestIdleCallback
       ? (fn) => requestIdleCallback(fn, { timeout: 1000 })
       : (fn) => setTimeout(fn, 0);
-    schedule(async () => {
+    schedule(() => {
       this._reportScheduled = false;
       this._lastReportTime = Date.now();
       try {
-        if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-          if (!this._reportedStats) {
-            this._reportedStats = { translated: 0, cached: 0, errors: 0, preserved: 0 };
-          }
-          const deltaTranslated = (this.stats.translated || 0) - (this._reportedStats.translated || 0);
-          const deltaCached = (this.stats.cached || 0) - (this._reportedStats.cached || 0);
-          const deltaErrors = (this.stats.errors || 0) - (this._reportedStats.errors || 0);
-          const deltaPreserved = (this.stats.preserved || 0) - (this._reportedStats.preserved || 0);
-
-          if (deltaTranslated === 0 && deltaCached === 0 && deltaErrors === 0 && deltaPreserved === 0) {
-            return;
-          }
-
-          const data = await chrome.storage.local.get(['stats']);
-          const current = data.stats || { translated: 0, cached: 0, errors: 0, preserved: 0 };
-
-          const updated = {
-            translated: (current.translated || 0) + deltaTranslated,
-            cached: (current.cached || 0) + deltaCached,
-            errors: (current.errors || 0) + deltaErrors,
-            preserved: (current.preserved || 0) + deltaPreserved
-          };
-
-          await chrome.storage.local.set({ stats: updated });
-
-          this._reportedStats = {
-            translated: this.stats.translated,
-            cached: this.stats.cached,
-            errors: this.stats.errors,
-            preserved: this.stats.preserved
-          };
-        }
+        if (!chrome.runtime?.id) return;
+        chrome.runtime.sendMessage({
+          type: 'UPDATE_STATS',
+          stats: { ...this.stats }
+        });
       } catch (err) { /* stats non-critical */ }
     });
-  }
-
-  updateCustomDictionary(dictionary) {
-    this.preprocessor.updateCustomDictionary(dictionary);
   }
 }

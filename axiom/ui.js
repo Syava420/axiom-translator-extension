@@ -9,10 +9,6 @@ class TranslationUI {
     const style = document.createElement('style');
     style.id = 'axiom-translator-styles';
     style.textContent = `
-      [data-testid="translationButton"] {
-        display: none !important;
-      }
-
       [data-translated="pending"] {
         opacity: ${CONFIG.UI.TRANSLATION_PENDING_OPACITY};
         transition: opacity 0.2s ease;
@@ -25,8 +21,44 @@ class TranslationUI {
         transition: opacity 0.2s ease;
       }
 
+      [data-translated="true"]::after {
+        content: 'RU';
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        font-size: 7px;
+        font-weight: 700;
+        background: ${CONFIG.UI.BADGE_COLOR};
+        color: white;
+        padding: 1px 3px;
+        border-radius: 3px;
+        opacity: 0.8;
+        pointer-events: none;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+        z-index: 10;
+      }
+
       [data-translated="original"] {
         position: relative;
+      }
+
+      [data-translated="original"]::after {
+        content: 'EN';
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        font-size: 7px;
+        font-weight: 700;
+        background: #6b7280;
+        color: white;
+        padding: 1px 3px;
+        border-radius: 3px;
+        opacity: 0.8;
+        pointer-events: none;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+        z-index: 10;
       }
 
       [data-translated="failed"] {
@@ -36,15 +68,15 @@ class TranslationUI {
       [data-translated="true"].axiom-tx-leaf:hover,
       [data-translated="original"].axiom-tx-leaf:hover {
         cursor: pointer;
-        background: transparent !important;
-        background-color: transparent !important;
+        text-decoration-line: underline;
+        text-decoration-style: dotted;
+        text-decoration-color: ${CONFIG.UI.BADGE_COLOR};
+        text-underline-offset: 3px;
       }
 
       [data-translated="true"]:not(.axiom-tx-leaf):hover,
       [data-translated="original"]:not(.axiom-tx-leaf):hover {
         cursor: pointer;
-        background: transparent !important;
-        background-color: transparent !important;
       }
 
       .axiom-tx-panel {
@@ -74,35 +106,11 @@ class TranslationUI {
         letter-spacing: 0.5px;
         z-index: 10;
       }
-
-      .axiom-narrative-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 22px;
-        height: 22px;
-        padding: 0;
-        background: rgba(124, 58, 237, 0.25);
-        border: 1px solid rgba(167, 139, 250, 0.45);
-        color: #ddd6fe;
-        border-radius: 6px;
-        cursor: pointer;
-        margin: 0 4px;
-        transition: all 0.15s ease;
-        user-select: none;
-        z-index: 99;
-        flex-shrink: 0;
-        vertical-align: middle;
-      }
-      .axiom-narrative-btn:hover {
-        background: rgba(124, 58, 237, 0.55);
-        border-color: #a78bfa;
-        color: #ffffff;
-        transform: scale(1.08);
-        box-shadow: 0 0 10px rgba(124, 58, 237, 0.4);
-      }
-      .axiom-narrative-btn:active {
-        transform: scale(0.96);
+      .axiom-tx-panel:hover {
+        text-decoration-line: underline;
+        text-decoration-style: dotted;
+        text-decoration-color: ${CONFIG.UI.BADGE_COLOR};
+        text-underline-offset: 3px;
       }
     `;
     document.head.appendChild(style);
@@ -118,57 +126,6 @@ class TranslationUI {
 
   showFailed(element) {
     element.dataset.translated = 'failed';
-  }
-
-  injectNarrativeButton(popupRoot, element) {
-    if (!popupRoot || popupRoot.querySelector('.axiom-narrative-btn')) return;
-
-    const btn = document.createElement('button');
-    btn.className = 'axiom-narrative-btn';
-    btn.type = 'button';
-    btn.title = 'Искать нарратив в Google на русском (нажмите чтобы скопировать и открыть Google)';
-    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
-
-    const handler = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-
-      const origText = element.dataset?.originalText || element._txOriginal?.join(' ') || element.textContent || '';
-      const cleanText = typeof cleanTweetText === 'function' ? cleanTweetText(origText) : origText;
-
-      let handleText = '';
-      const handleEl = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"]');
-      if (handleEl) {
-        handleText = handleEl.textContent.trim();
-      }
-
-      const promptText = `Найди свежие новости и обсуждения в Twitter X, Reddit и сети по теме. Напиши на русском с разделением по строкам:
-📌 Саммари: (1 предложение)
-⚡ Инфоповод из X/Reddit: (что произошло)
-🚀 Почему покупают: (в чем суть пампа)
-Без сленга WAGMI/FOMO. Твит ${handleText}: ${cleanText}`.replace(/ +/g, ' ').trim();
-      const searchQuery = promptText.length > 450 ? promptText.substring(0, 450) : promptText;
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(cleanText).catch(() => {});
-      }
-
-      const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&hl=ru&udm=50`;
-      window.open(searchUrl, '_blank');
-    };
-
-    btn.addEventListener('click', handler, true);
-    btn.addEventListener('pointerdown', (e) => e.stopPropagation(), true);
-
-    const header = popupRoot.querySelector('a[href*="x.com"], a[href*="twitter.com"], [class*="handle"], [class*="user"], [class*="profile"], [class*="header"], [class*="head"]')
-      || popupRoot.querySelector('div > span, div > h3, div > h4, div > a')
-      || popupRoot.firstElementChild;
-
-    if (header && header.parentElement) {
-      header.parentElement.appendChild(btn);
-    } else {
-      popupRoot.prepend(btn);
-    }
   }
 
   _setupGlobalToggle() {
@@ -278,66 +235,5 @@ class TranslationUI {
     element.dataset.translated = newState;
     element.dataset.translatedAt = String(Date.now());
     if (canUpdateClean) element.dataset.cleanedFullText = cleanTweetText(getFullTextContent(element));
-  }
-
-  setDebugEnabled(enabled) {
-    this.isDebugEnabled = !!enabled;
-    const panel = document.getElementById('axiom-debug-panel');
-    if (panel) {
-      panel.style.display = this.isDebugEnabled ? 'flex' : 'none';
-    }
-    if (this.isDebugEnabled) {
-      this.logDebug('info', 'РЕЖИМ ОТЛАДКИ', 'Логирование включено. Ожидание карточек...');
-    }
-  }
-
-  logDebug(type, title, message) {
-    if (CONFIG.DEBUG) console.log(`[AxiomDebug:${type}] ${title} - ${message}`);
-    if (!this.isDebugEnabled) return;
-    let panel = document.getElementById('axiom-debug-panel');
-    if (!panel) {
-      panel = document.createElement('div');
-      panel.id = 'axiom-debug-panel';
-      panel.style.cssText = `
-        position: fixed;
-        bottom: 16px;
-        right: 16px;
-        width: 380px;
-        max-height: 280px;
-        background: rgba(15, 15, 20, 0.95);
-        border: 1px solid #7c3aed;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-        border-radius: 8px;
-        z-index: 999999;
-        font-family: ui-monospace, monospace;
-        font-size: 11px;
-        color: #e2e8f0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-      `;
-      panel.innerHTML = `
-        <div style="background:#1e1b4b; padding:6px 10px; font-weight:bold; color:#a78bfa; display:flex; justify-space-between; align-items:center; border-bottom:1px solid rgba(124,58,237,0.3);">
-          <span>🐞 AXIOM DEBUG LOGS</span>
-          <span style="cursor:pointer; opacity:0.7; padding:0 4px;" onclick="this.closest('#axiom-debug-panel').style.display='none'">✕</span>
-        </div>
-        <div id="axiom-debug-log-list" style="padding:6px 10px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:4px;"></div>
-      `;
-      document.body.appendChild(panel);
-    }
-    panel.style.display = 'flex';
-    const list = panel.querySelector('#axiom-debug-log-list');
-    if (list) {
-      const item = document.createElement('div');
-      const colors = { info: '#60a5fa', success: '#4ade80', warn: '#facc15', error: '#f87171' };
-      const color = colors[type] || '#e2e8f0';
-      item.style.cssText = `line-height:1.3; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:3px; word-break:break-word; color:${color};`;
-      const time = new Date().toLocaleTimeString();
-      item.innerHTML = `<span style="opacity:0.6; color:#94a3b8;">[${time}]</span> <strong>${title}:</strong> ${message}`;
-      list.appendChild(item);
-      if (list.children.length > 50) list.removeChild(list.firstChild);
-      list.scrollTop = list.scrollHeight;
-    }
   }
 }

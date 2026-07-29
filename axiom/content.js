@@ -2,16 +2,14 @@
   'use strict';
 
   const hostname = window.location.hostname;
-  const isSupported = hostname === 'axiom.trade' || hostname.endsWith('.axiom.trade') ||
-                      hostname === 'padre.gg' || hostname.endsWith('.padre.gg');
-  if (!isSupported) return;
+  if (hostname !== 'axiom.trade' && !hostname.endsWith('.axiom.trade')) return;
 
   if (CONFIG.DEBUG) console.log('[AxiomTranslator] Extension loaded on', window.location.href);
 
 
   let state;
   try {
-    state = await chrome.storage.local.get(['enabled', 'custom_dictionary']);
+    state = await chrome.storage.local.get(['enabled', 'stats']);
   } catch (err) {
     console.warn('[AxiomTranslator] Failed to load state:', err);
     state = {};
@@ -25,12 +23,13 @@
   const diagnostics = new Diagnostics();
   await diagnostics.load();
 
-  const translator = new TranslationService(cache, diagnostics, state.custom_dictionary);
+  const translator = new TranslationService(cache, diagnostics);
+
+  if (state.stats) {
+    Object.assign(translator.stats, state.stats);
+  }
 
   const ui = new TranslationUI();
-  const { debug } = await chrome.storage.local.get('debug').catch(() => ({}));
-  if (debug) ui.setDebugEnabled(true);
-
   const observer = new TweetObserver(translator, cache, ui, diagnostics);
 
   const _apiHosts = [
@@ -59,7 +58,27 @@
   document.head.appendChild(_prefetchFrag);
 
 
+  function _pingApis(word) {
+    try {
+      const gUrl = CONFIG.APIS.GOOGLE.url + '?' + new URLSearchParams({ ...CONFIG.APIS.GOOGLE.params, q: word });
+      chrome.runtime.sendMessage({ type: 'PROXY_FETCH', url: gUrl }, () => {});
+    } catch (e) {}
+    for (const base of CONFIG.APIS.MOZHI.instances) {
+      fetch(base + '/api/translate?engine=' + CONFIG.APIS.MOZHI.engine + '&from=en&to=ru&text=' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
+    }
+    fetch(CONFIG.APIS.SIMPLYTRANSLATE.url + '?engine=google&from=en&to=ru&text=' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
+    for (const base of CONFIG.APIS.LINGVA.instances) {
+      fetch(base + '/api/v1/en/ru/' + word, { method: 'GET', credentials: 'omit' }).catch(() => {});
+    }
+  }
 
+  if (isEnabled) _pingApis('hi');
+
+  const _keepAliveId = setInterval(() => {
+    if (!isEnabled) return;
+    if (!chrome.runtime?.id) { clearInterval(_keepAliveId); return; }
+    _pingApis('ok');
+  }, 60000);
 
 
   if (isEnabled) {
@@ -73,12 +92,6 @@
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
-      case 'UPDATE_CUSTOM_DICTIONARY':
-        translator.updateCustomDictionary(message.dictionary);
-        if (CONFIG.DEBUG) console.log('[AxiomTranslator] Custom dictionary updated');
-        sendResponse({ ok: true });
-        break;
-
       case 'TOGGLE_TRANSLATION':
         isEnabled = message.enabled;
         observer.setEnabled(isEnabled);
@@ -88,11 +101,6 @@
           observer.stop();
         }
         if (CONFIG.DEBUG) console.log(`[AxiomTranslator] Translation ${isEnabled ? 'enabled' : 'disabled'}`);
-        sendResponse({ ok: true });
-        break;
-
-      case 'TOGGLE_DEBUG':
-        ui.setDebugEnabled(message.debug);
         sendResponse({ ok: true });
         break;
 
